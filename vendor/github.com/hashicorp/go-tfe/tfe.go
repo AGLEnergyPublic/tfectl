@@ -1,21 +1,20 @@
 package tfe
 
 import (
-	"errors"
-	"io/fs"
-	"log"
-	"sort"
-
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -41,7 +40,8 @@ const (
 	DefaultBasePath     = "/api/v2/"
 	DefaultRegistryPath = "/api/registry/"
 	// PingEndpoint is a no-op API endpoint used to configure the rate limiter
-	PingEndpoint = "ping"
+	PingEndpoint       = "ping"
+	ContentTypeJSONAPI = "application/vnd.api+json"
 )
 
 // RetryLogHook allows a function to run before each retry.
@@ -139,6 +139,8 @@ type Client struct {
 	PlanExports                PlanExports
 	Policies                   Policies
 	PolicyChecks               PolicyChecks
+	PolicyEvaluations          PolicyEvaluations
+	PolicySetOutcomes          PolicySetOutcomes
 	PolicySetParameters        PolicySetParameters
 	PolicySetVersions          PolicySetVersions
 	PolicySets                 PolicySets
@@ -165,6 +167,7 @@ type Client struct {
 	VariableSetVariables       VariableSetVariables
 	Workspaces                 Workspaces
 	WorkspaceRunTasks          WorkspaceRunTasks
+	Projects                   Projects
 
 	Meta Meta
 }
@@ -187,6 +190,10 @@ type Meta struct {
 }
 
 func (c *Client) NewRequest(method, path string, reqAttr interface{}) (*ClientRequest, error) {
+	return c.NewRequestWithAdditionalQueryParams(method, path, reqAttr, nil)
+}
+
+func (c *Client) NewRequestWithAdditionalQueryParams(method, path string, reqAttr interface{}, additionalQueryParams map[string][]string) (*ClientRequest, error) {
 	var u *url.URL
 	var err error
 	if strings.Contains(path, "/api/registry/") {
@@ -208,18 +215,21 @@ func (c *Client) NewRequest(method, path string, reqAttr interface{}) (*ClientRe
 	var body interface{}
 	switch method {
 	case "GET":
-		reqHeaders.Set("Accept", "application/vnd.api+json")
+		reqHeaders.Set("Accept", ContentTypeJSONAPI)
 
 		if reqAttr != nil {
 			q, err := query.Values(reqAttr)
 			if err != nil {
 				return nil, err
 			}
+			for k, v := range additionalQueryParams {
+				q[k] = v
+			}
 			u.RawQuery = encodeQueryParams(q)
 		}
 	case "DELETE", "PATCH", "POST":
-		reqHeaders.Set("Accept", "application/vnd.api+json")
-		reqHeaders.Set("Content-Type", "application/vnd.api+json")
+		reqHeaders.Set("Accept", ContentTypeJSONAPI)
+		reqHeaders.Set("Content-Type", ContentTypeJSONAPI)
 
 		if reqAttr != nil {
 			if body, err = serializeRequestBody(reqAttr); err != nil {
@@ -377,9 +387,12 @@ func NewClient(cfg *Config) (*Client, error) {
 	client.Plans = &plans{client: client}
 	client.Policies = &policies{client: client}
 	client.PolicyChecks = &policyChecks{client: client}
+	client.PolicyEvaluations = &policyEvaluation{client: client}
+	client.PolicySetOutcomes = &policySetOutcome{client: client}
 	client.PolicySetParameters = &policySetParameters{client: client}
 	client.PolicySets = &policySets{client: client}
 	client.PolicySetVersions = &policySetVersions{client: client}
+	client.Projects = &projects{client: client}
 	client.RegistryModules = &registryModules{client: client}
 	client.RegistryProviderPlatforms = &registryProviderPlatforms{client: client}
 	client.RegistryProviders = &registryProviders{client: client}
@@ -559,7 +572,7 @@ func (c *Client) getRawAPIMetadata() (rawAPIMetadata, error) {
 	for k, v := range c.headers {
 		req.Header[k] = v
 	}
-	req.Header.Set("Accept", "application/vnd.api+json")
+	req.Header.Set("Accept", ContentTypeJSONAPI)
 	req.Header.Set("Authorization", "Bearer "+c.token)
 
 	// Make a single request to retrieve the rate limit headers.
