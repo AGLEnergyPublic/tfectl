@@ -1,8 +1,29 @@
-# Unreleased
+# v1.15.0
 
 ## Enhancements
 
-* Add OPA support to the Policy Set API's by @mrinalirao [#575](https://github.com/hashicorp/go-tfe/pull/575)
+* Add Beta `Projects` endpoint. The API is in not yet available to all users @hs26gill [#564](https://github.com/hashicorp/go-tfe/pull/564)
+
+# v1.14.0
+
+## Enhancements
+
+* Adds Beta parameter `Overridable` for OPA `policy set` update API (`PolicySetUpdateOptions`) @mrinalirao [#594](https://github.com/hashicorp/go-tfe/pull/594)
+* Adds new task stage status values representing `canceled`, `errored`, `unreachable` @mrinalirao [#594](https://github.com/hashicorp/go-tfe/pull/594)
+
+# v1.13.0
+
+## Bug Fixes
+
+* Fixes `AuditTrail` pagination parameters (`CurrentPage`, `PreviousPage`, `NextPage`, `TotalPages`, `TotalCount`), which were not deserialized after reading from the List endpoint by @brandonc [#586](https://github.com/hashicorp/go-tfe/pull/586)
+
+## Enhancements
+
+* Add OPA support to the Policy Set APIs by @mrinalirao [#575](https://github.com/hashicorp/go-tfe/pull/575)
+* Add OPA support to the Policy APIs by @mrinalirao [#579](https://github.com/hashicorp/go-tfe/pull/579)
+* Add support for enabling no-code provisioning in an existing or new `RegistryModule` by @miguelhrocha [#562](https://github.com/hashicorp/go-tfe/pull/562)
+* Add Policy Evaluation and Policy Set Outcome APIs by @mrinalirao [#583](https://github.com/hashicorp/go-tfe/pull/583)
+* Add OPA support to Task Stage APIs by @mrinalirao [#584](https://github.com/hashicorp/go-tfe/pull/584)
 
 # v1.12.0
 

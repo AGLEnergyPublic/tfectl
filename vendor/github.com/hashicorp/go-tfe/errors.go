@@ -82,6 +82,10 @@ var (
 
 	ErrInvalidRunID = errors.New("invalid value for run ID")
 
+	ErrInvalidProjectID = errors.New("invalid value for project ID")
+
+	ErrInvalidPagination = errors.New("invalid value for page size or number")
+
 	ErrInvalidRunTaskCategory = errors.New(`category must be "task"`)
 
 	ErrInvalidRunTaskID = errors.New("invalid value for run task ID")
@@ -115,6 +119,10 @@ var (
 	ErrInvalidPolicySetID = errors.New("invalid value for policy set ID")
 
 	ErrInvalidPolicyCheckID = errors.New("invalid value for policy check ID")
+
+	ErrInvalidPolicyEvaluationID = errors.New("invalid value for policy evaluation ID")
+
+	ErrInvalidPolicySetOutcomeID = errors.New("invalid value for policy set outcome ID")
 
 	ErrInvalidTag = errors.New("invalid tag id")
 
@@ -198,6 +206,8 @@ var (
 	ErrRequiredKey = errors.New("key is required")
 
 	ErrRequiredName = errors.New("name is required")
+
+	ErrRequiredQuery = errors.New("query cannot be empty")
 
 	ErrRequiredEnabled = errors.New("enabled is required")
 
@@ -303,7 +313,7 @@ var (
 
 	ErrRequiredFilename = errors.New("filename is required")
 
-	ErrInvalidAsciiArmor = errors.New("ascii armor is invalid")
+	ErrInvalidAsciiArmor = errors.New("ASCII Armor is invalid")
 
 	ErrRequiredNamespace = errors.New("namespace is required for public registry")
 
