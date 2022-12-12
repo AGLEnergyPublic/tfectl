@@ -3,7 +3,7 @@ module tfectl
 go 1.18
 
 require (
-	github.com/hashicorp/go-tfe v1.15.0
+	github.com/hashicorp/go-tfe v1.16.0
 	github.com/itchyny/gojq v0.12.10
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
