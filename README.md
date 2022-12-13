@@ -390,7 +390,7 @@ Use "tfectl [command] --help" for more information about a command.
         {
             "id": "run-UFaNv3rz5XnzPhCh",
             "workspace_id": "ws-ojAyfT3ar4oXt3eA",
-            "workspace_name": "workspace-infra-shared-services-production",
+            "workspace_name": "workspace-infrastructure-production",
             "status": "cancelling"
         }
     ]
