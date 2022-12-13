@@ -46,6 +46,7 @@ Usage:
   tfectl [command]
 
 Available Commands:
+  admin       Manage TFE admin operations
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   run         Manage TFE runs
@@ -352,6 +353,48 @@ Use "tfectl [command] --help" for more information about a command.
       }
     ]
 	```
+
+### Admin
+* Perform Admin operations supported by the TFE Admin API.
+* NOTE: Admin settings are only available in Terraform Enterprise.
+
+* #### Runs
+  * #### List - Lists Runs filtered on run status - querying the `admin/runs` endpoint
+  ```bash
+    $ tfectl admin run list --filter "plan_queued" --query '.[] | .id'
+    [
+        "run-4LuSKSss9KH2NAPN",
+        "run-HCL7LVz67hVHEgsx",
+        "run-ozEfahr1YrDQNokG",
+        "run-hqWdU7BMuQPpqFrE",
+        "run-BstJ5RJKFGmYnCni",
+        "run-7WCMcDf8GZxYGqjN",
+        "run-ZtzW7Xb5k6cfmgNK",
+        "run-WC4q9Ec3vernx7Sc",
+        "run-q9Lak8i1rzS5mXFU",
+        "run-gbJyJAT89tzC2ziz",
+        "run-MLMzcUuoSZL8Tz8C",
+        "run-nbSKBf9CLRjPbj1q",
+        "run-faqeyLU2VMBcHPJQ",
+        "run-hB6RqJtY1SuGWsHF",
+        "run-6HaUc4T31yZsENmC",
+        "run-vPvYHNrjBCD6Y3ke",
+        "run-ENdFcVpEp2AMLxNr",
+        "run-kxgmgdReVzrVopVG"
+    ]
+  ```
+  * #### Force-Cancel - Force cancels runIDs
+  ```bash
+    $ tfectl admin run force-cancel --ids run-UFaNv3rz5XnzPhCh
+    [
+        {
+            "id": "run-UFaNv3rz5XnzPhCh",
+            "workspace_id": "ws-ojAyfT3ar4oXt3eA",
+            "workspace_name": "workspace-infrastructure-production",
+            "status": "cancelling"
+        }
+    ]
+  ```
 
 ### Build
 * Using GNU Make
