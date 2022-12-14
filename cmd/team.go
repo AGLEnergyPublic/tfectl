@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	tfe "github.com/hashicorp/go-tfe"
 	"github.com/AGLEnergyPublic/tfectl/resources"
+	tfe "github.com/hashicorp/go-tfe"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
