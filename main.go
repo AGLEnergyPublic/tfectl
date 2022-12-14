@@ -1,6 +1,6 @@
 package main
 
-import "tfectl/cmd"
+import "github.com/AGLEnergyPublic/tfectl/cmd"
 
 func main() {
 	cmd.Execute()

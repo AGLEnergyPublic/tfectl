@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	tfe "github.com/hashicorp/go-tfe"
-	"tfectl/resources"
+	"github.com/AGLEnergyPublic/tfectl/resources"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
