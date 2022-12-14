@@ -1,4 +1,4 @@
-module tfectl
+module github.com/AGLEnergyPublic/tfectl
 
 go 1.18
 
