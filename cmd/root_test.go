@@ -12,6 +12,7 @@ Usage:
   tfectl [command]
 
 Available Commands:
+  admin       Manage TFE admin operations
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   run         Manage TFE runs
