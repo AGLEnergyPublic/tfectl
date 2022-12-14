@@ -154,7 +154,7 @@ func listAdminRuns(client *tfe.Client, filter string) ([]*tfe.AdminRun, error) {
 }
 
 func adminForceCancelRun(client *tfe.Client, runID string) {
-	comment := fmt.Sprint("Force-cancel run as Admin %s", runID)
+	comment := fmt.Sprintf("Force-cancel run as Admin %s", runID)
 
 	options := tfe.AdminRunForceCancelOptions{
 		Comment: &comment,
