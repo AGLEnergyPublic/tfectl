@@ -37,8 +37,6 @@ var policyListCmd = &cobra.Command{
 		filter, _ := cmd.Flags().GetString("filter")
 		query, _ := cmd.Flags().GetString("query")
 
-		//var policyList []tfe.Policy
-
 		policies, err := listPolicies(client, organization, filter)
 		check(err)
 
