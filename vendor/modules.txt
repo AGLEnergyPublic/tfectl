@@ -25,7 +25,7 @@ github.com/hashicorp/jsonapi
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
-# github.com/itchyny/gojq v0.12.10
+# github.com/itchyny/gojq v0.12.11
 ## explicit; go 1.17
 github.com/itchyny/gojq
 # github.com/itchyny/timefmt-go v0.1.5
