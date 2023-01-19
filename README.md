@@ -49,6 +49,7 @@ Available Commands:
   admin       Manage TFE admin operations
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
+  policy      Query TFE policies
   run         Manage TFE runs
   team        Manage TFE teams
   variable    Manage TFE workspace variables
@@ -393,6 +394,23 @@ Use "tfectl [command] --help" for more information about a command.
             "workspace_name": "workspace-infrastructure-production",
             "status": "cancelling"
         }
+    ]
+  ```
+
+### Policy
+* Query policies in TFE/TFC
+
+* #### List
+  ```bash
+    $ tfectl policy list --filter "production-tagging"
+    [
+      {
+        "id": "pol-5Qgo4h2mp2z68u3N",
+        "name": "production-tagging",
+        "kind": "sentinel",
+        "enforce": "hard-mandatory",
+        "policy_set_count": 1
+      }
     ]
   ```
 
