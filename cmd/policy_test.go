@@ -4,21 +4,21 @@ import (
 	"testing"
 )
 
-func TestWorkspaceListCmd(t *testing.T) {
+func TestPolicyListCmd(t *testing.T) {
 
 	tt := []struct {
 		args []string
 		err  error
 	}{
 		{
-			args: []string{"workspace", "list"},
+			args: []string{"policy", "list"},
 			err:  nil,
 		},
 	}
 
 	r := rootCmd
-	c1 := workspaceCmd
-	c2 := workspaceListCmd
+	c1 := policyCmd
+	c2 := policyListCmd
 	r.AddCommand(c1, c2)
 
 	runTestCasesNoOutput(t, r, tt)
