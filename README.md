@@ -1,4 +1,10 @@
 # tfectl
+[![Tests](https://github.com/AGLEnergyPublic/tfectl/actions/workflows/go.yml/badge.svg)](https://github.com/AGLEnergyPublic/tfectl/actions/workflows/go.yml)
+[![GitHub license](https://img.shields.io/github/license/AGLEnergyPublic/tfectl.svg)](https://github.com/AGLEnergyPublic/tfectl/blob/main/LICENSE)
+[![GoDoc](https://godoc.org/github.com/AGLEnergyPublic/tfectl?status.svg)](https://godoc.org/github.com/AGLEnergyPublic/tfectl)
+[![Go Report Card](https://goreportcard.com/badge/github.com/AGLEnergyPublic/tfectl)](https://goreportcard.com/report/github.com/AGLEnergyPublic/tfectl)
+[![GitHub issues](https://img.shields.io/github/issues/AGLEnergyPublic/tfectl.svg)](https://github.com/AGLEnergyPublic/tfectl/issues)
+
 * CLI Utility to query/manage TFE inspired by [tfe-cli](https://github.com/rgreinho/tfe-cli)
 
 ## Setup
@@ -11,8 +17,10 @@
     tfectl [command]
 
   Available Commands:
+    admin       Manage TFE admin operations
     completion  Generate the autocompletion script for the specified shell
     help        Help about any command
+    policy      Query TFE policies
     run         Manage TFE runs
     team        Manage TFE teams
     variable    Manage TFE workspace variables
@@ -266,9 +274,9 @@ Use "tfectl [command] --help" for more information about a command.
       "hcl": true,
       "sensitive": true
     }
-	```
+  ```
 * #### Update existing workspace variable
-	```bash
+  ```bash
     $ tfectl variable update --variable-id var-uCgZrzkPhis6qXTS --workspace-id ws-DpeRu7KpazXEWKoJ --value "test CLI Value 2" --key "testCLI" --hcl --sensitive true
     {
       "id": "var-uCgZrzkPhis6qXTS",
@@ -279,9 +287,9 @@ Use "tfectl [command] --help" for more information about a command.
       "hcl": true,
       "sensitive": true
     }
-	```
+  ```
 * #### Delete existing workspace variable
-	```bash
+  ```bash
     $ tfectl variable delete --variable-id var-uCgZrzkPhis6qXTS --workspace-id ws-DpeRu7KpazXEWKoJ
     # Returns current variables (similar to variable list)
     [
@@ -328,10 +336,10 @@ Use "tfectl [command] --help" for more information about a command.
         ]
       }
     ]
-	```
+  ```
 
 * #### Create variables from file
-	```bash
+  ```bash
     $ tfectl variable create from-file --file variables.json --workspace-id ws-DpeRu7KpazXEWKoJ
     [
       {
@@ -353,7 +361,7 @@ Use "tfectl [command] --help" for more information about a command.
         "sensitive": true
       }
     ]
-	```
+  ```
 
 ### Admin
 * Perform Admin operations supported by the TFE Admin API.
