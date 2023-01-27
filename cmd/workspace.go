@@ -258,7 +258,8 @@ var workspaceLockCmd = &cobra.Command{
 		}
 
 		for _, wrk := range workspaceList {
-			entry := "{}"
+			var entry string
+
 			workspace, err := lockWorkspace(client, organization, wrk.WorkspaceID, &reason)
 			if err != nil {
 				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":true}`, wrk.WorkspaceName, wrk.WorkspaceID)
@@ -357,7 +358,8 @@ var workspaceUnlockCmd = &cobra.Command{
 		}
 
 		for _, wrk := range workspaceList {
-			entry := "{}"
+			var entry string
+
 			workspace, err := unlockWorkspace(client, organization, wrk.WorkspaceID)
 			if err != nil {
 				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":false}`, workspace.Name, workspace.ID)

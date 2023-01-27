@@ -436,7 +436,7 @@ func readVariable(client *tfe.Client, workspace WorkspaceLite, variableID string
 }
 
 func createVariable(client *tfe.Client, workspaceID string, key *string, value *string, description *string, category *tfe.CategoryType, hcl *bool, sensitive *bool) (Variable, error) {
-	result := Variable{}
+	var result Variable
 
 	options := tfe.VariableCreateOptions{
 		Key:         key,
@@ -464,7 +464,7 @@ func createVariable(client *tfe.Client, workspaceID string, key *string, value *
 }
 
 func updateVariable(client *tfe.Client, workspaceID string, variableID string, key *string, value *string, description *string, hcl *bool, sensitive *bool) (Variable, error) {
-	result := Variable{}
+	var result Variable
 
 	options := tfe.VariableUpdateOptions{
 		Key:         key,
