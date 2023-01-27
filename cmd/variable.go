@@ -204,7 +204,9 @@ var variableCreateFromFileCmd = &cobra.Command{
 		var outputVariablesList []Variable
 		var ouputVariablesListJson []byte
 
-		json.Unmarshal([]byte(byteVarJson), &variables)
+		err = json.Unmarshal([]byte(byteVarJson), &variables)
+		check(err)
+
 		for _, newVar := range variables.Variables {
 			v, err := createVariable(client, workspaceID, &newVar.Key, &newVar.Value, &newVar.Description, &newVar.Category, &newVar.HCL, &newVar.Sensitive)
 			check(err)
@@ -268,7 +270,9 @@ var variableUpdateFromFileCmd = &cobra.Command{
 		var outputVariablesList []Variable
 		var ouputVariablesListJson []byte
 
-		json.Unmarshal([]byte(byteVarJson), &variables)
+		err = json.Unmarshal([]byte(byteVarJson), &variables)
+		check(err)
+
 		for _, newVar := range variables.Variables {
 			v, err := updateVariable(client, workspaceID, newVar.ID, &newVar.Key, &newVar.Value, &newVar.Description, &newVar.HCL, &newVar.Sensitive)
 			check(err)
@@ -436,7 +440,7 @@ func readVariable(client *tfe.Client, workspace WorkspaceLite, variableID string
 }
 
 func createVariable(client *tfe.Client, workspaceID string, key *string, value *string, description *string, category *tfe.CategoryType, hcl *bool, sensitive *bool) (Variable, error) {
-	result := Variable{}
+	var result Variable
 
 	options := tfe.VariableCreateOptions{
 		Key:         key,
@@ -464,7 +468,7 @@ func createVariable(client *tfe.Client, workspaceID string, key *string, value *
 }
 
 func updateVariable(client *tfe.Client, workspaceID string, variableID string, key *string, value *string, description *string, hcl *bool, sensitive *bool) (Variable, error) {
-	result := Variable{}
+	var result Variable
 
 	options := tfe.VariableUpdateOptions{
 		Key:         key,

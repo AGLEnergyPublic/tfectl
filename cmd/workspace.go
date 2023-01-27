@@ -258,7 +258,8 @@ var workspaceLockCmd = &cobra.Command{
 		}
 
 		for _, wrk := range workspaceList {
-			entry := "{}"
+			var entry string
+
 			workspace, err := lockWorkspace(client, organization, wrk.WorkspaceID, &reason)
 			if err != nil {
 				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":true}`, wrk.WorkspaceName, wrk.WorkspaceID)
@@ -357,7 +358,8 @@ var workspaceUnlockCmd = &cobra.Command{
 		}
 
 		for _, wrk := range workspaceList {
-			entry := "{}"
+			var entry string
+
 			workspace, err := unlockWorkspace(client, organization, wrk.WorkspaceID)
 			if err != nil {
 				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":false}`, workspace.Name, workspace.ID)
@@ -463,8 +465,8 @@ func getWorkspace(client *tfe.Client, organization string, workspaceID string) (
 	result.Locked = workspaceRead.Locked
 	result.ExecutionMode = workspaceRead.ExecutionMode
 	result.TerraformVersion = workspaceRead.TerraformVersion
-	result.CreatedDaysAgo = fmt.Sprintf("%f", time.Now().Sub(workspaceRead.CreatedAt).Hours()/24)
-	result.UpdatedDaysAgo = fmt.Sprintf("%f", time.Now().Sub(workspaceRead.UpdatedAt).Hours()/24)
+	result.CreatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.CreatedAt).Hours()/24)
+	result.UpdatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.UpdatedAt).Hours()/24)
 	result.LastRemoteRunDaysAgo = workspaceDetails.LastRemoteRunDaysAgo
 	result.LastStateUpdateDaysAgo = workspaceDetails.LastStateUpdateDaysAgo
 
@@ -483,7 +485,7 @@ func getWorkspaceDetails(client *tfe.Client, organization string, workspaceID st
 
 	lastRemoteRunDaysAgo := "NA"
 	if len(rList.Items) > 0 {
-		lastRemoteRunDaysAgo = fmt.Sprintf("%f", time.Now().Sub(rList.Items[0].CreatedAt).Hours()/24)
+		lastRemoteRunDaysAgo = fmt.Sprintf("%f", time.Since(rList.Items[0].CreatedAt).Hours()/24)
 	}
 
 	// Determine when current state-version was created
@@ -497,7 +499,7 @@ func getWorkspaceDetails(client *tfe.Client, organization string, workspaceID st
 	}
 
 	if stateVersion != nil {
-		lastStateUpdateDaysAgo = fmt.Sprintf("%f", time.Now().Sub(stateVersion.CreatedAt).Hours()/24)
+		lastStateUpdateDaysAgo = fmt.Sprintf("%f", time.Since(stateVersion.CreatedAt).Hours()/24)
 	}
 
 	results.LastRemoteRunDaysAgo = lastRemoteRunDaysAgo

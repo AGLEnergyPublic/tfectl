@@ -121,9 +121,7 @@ var teamGetCmd = &cobra.Command{
 			check(err)
 
 			for _, team := range teams {
-				var tmpTeam TeamDetail
-
-				tmpTeam = genTeamDetail(client, team)
+				tmpTeam := genTeamDetail(client, team)
 
 				log.Debugf("Adding team %v", tmpTeam)
 				teamList = append(teamList, tmpTeam)
