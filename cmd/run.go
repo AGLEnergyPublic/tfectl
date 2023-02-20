@@ -37,13 +37,35 @@ var runQueueCmd = &cobra.Command{
 		check(err)
 
 		filter, _ := cmd.Flags().GetString("filter")
+		ids, _ := cmd.Flags().GetString("ids")
+
+		if filter != "" && ids != "" {
+			log.Fatal("filter and ids are mutually exclusive, use one or the other!")
+		}
+
+		if filter == "" && ids == "" {
+			log.Fatal("please provide one of ids or filter to perform this operation!")
+		}
+
 		query, _ := cmd.Flags().GetString("query")
 
 		var runListJson []byte
 		var runList []Run
+		var workspaces []*tfe.Workspace
 
-		workspaces, err := listWorkspaces(client, organization, filter)
-		check(err)
+		if filter != "" {
+			workspaces, _ = listWorkspaces(client, organization, filter)
+		}
+
+		if ids != "" {
+			workspaceIdList := strings.Split(ids, ",")
+			for _, id := range workspaceIdList {
+				tmpWorkspace, err := client.Workspaces.ReadByID(context.Background(), id)
+				check(err)
+
+				workspaces = append(workspaces, tmpWorkspace)
+			}
+		}
 
 		for _, workspace := range workspaces {
 			var tmpRun Run
@@ -307,7 +329,8 @@ func init() {
 	runCmd.AddCommand(runDiscardCmd)
 
 	// Queue sub-command
-	runQueueCmd.Flags().String("filter", "", "Queue plans on workspaces matching filter")
+	runQueueCmd.Flags().String("filter", "", "Queue plans on workspaces matching filter")          // Mutually exclusive with `ids`
+	runQueueCmd.Flags().String("ids", "", "Queue plans on comma-separated string of workspaceIDs") // Mutually exclusive with `filter`
 
 	// Apply sub-command
 	runApplyCmd.Flags().String("ids", "", "Apply comma-separated string of runIDs")
