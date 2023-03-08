@@ -27,6 +27,50 @@ var runCmd = &cobra.Command{
 	Long:  `Manage TFE runs.`,
 }
 
+var runListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List runs in a TFE workspace",
+	Long:  `List runs in a TFE workspace.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		// list runs in workspace function
+		organization, client, err := resources.Setup(cmd)
+		check(err)
+
+		workspaceID, _ := cmd.Flags().GetString("workspace-id")
+		status, _ := cmd.Flags().GetString("status")
+		operation, _ := cmd.Flags().GetString("operation")
+		query, _ := cmd.Flags().GetString("query")
+
+		// Get workspaceName by ID
+		workspaceName, _ := getWorkspaceNameByID(client, organization, workspaceID)
+
+		// List runs in workspace
+		runs, _ := listRun(client, workspaceID, status, operation)
+
+		var runJson []byte
+		var runList []Run
+
+		for _, run := range runs {
+			var tmpRun Run
+			log.Debugf("Processing run: %s - %s", run.ID, run.Status)
+			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, run.ID, workspaceID, workspaceName, run.Status)
+
+			err := json.Unmarshal([]byte(entry), &tmpRun)
+			check(err)
+
+			runList = append(runList, tmpRun)
+		}
+		runJson, _ = json.MarshalIndent(runList, "", "  ")
+
+		if query != "" {
+			resources.JqRun(runJson, query)
+		} else {
+			fmt.Println(string(runJson))
+		}
+
+	},
+}
+
 var runQueueCmd = &cobra.Command{
 	Use:   "queue",
 	Short: "Queue TFE runs",
@@ -322,11 +366,17 @@ var runDiscardCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+	runCmd.AddCommand(runListCmd)
 	runCmd.AddCommand(runQueueCmd)
 	runCmd.AddCommand(runApplyCmd)
 	runCmd.AddCommand(runGetCmd)
 	runCmd.AddCommand(runCancelCmd)
 	runCmd.AddCommand(runDiscardCmd)
+
+	// List sub-command
+	runListCmd.Flags().String("workspace-id", "", "WorkspaceID of the TFE workspace")
+	runListCmd.Flags().String("status", "", "Filter by run status")
+	runListCmd.Flags().String("operation", "", "Filter by run operation")
 
 	// Queue sub-command
 	runQueueCmd.Flags().String("filter", "", "Queue plans on workspaces matching filter")          // Mutually exclusive with `ids`
@@ -348,6 +398,30 @@ func init() {
 	runDiscardCmd.Flags().String("ids", "", "Discard comma-separated string of runIDs")     // Mutually exclusive with `filter`
 	runDiscardCmd.Flags().String("filter", "", "Discard run on workspaces matching filter") // Mutually exclusive with `ids`
 
+}
+
+func listRun(client *tfe.Client, workspaceID string, status string, operation string) ([]*tfe.Run, error) {
+	results := []*tfe.Run{}
+	// We only care about the first few runs at this point
+	currentPage := 1
+
+	log.Debugf("Processing page %d.\n", currentPage)
+	options := &tfe.RunListOptions{
+		ListOptions: tfe.ListOptions{
+			PageNumber: currentPage,
+			PageSize:   20,
+		},
+		Status:    status,
+		Operation: operation,
+	}
+
+	r, err := client.Runs.List(context.Background(), workspaceID, options)
+	if err != nil {
+		return nil, err
+	}
+	results = append(results, r.Items...)
+
+	return results, nil
 }
 
 func queueRun(client *tfe.Client, organization string, workspace *tfe.Workspace) (*tfe.Run, error) {
