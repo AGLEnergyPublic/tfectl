@@ -167,6 +167,23 @@ Use "tfectl [command] --help" for more information about a command.
   ```
 ### Runs
 * `run` sub-command lets you manage runs against one or more workspaces
+* #### List run
+  * List runs in workspace specified by workspaceID
+  * `--status` refers to valid [Run.Status](https://developer.hashicorp.com/terraform/enterprise/api-docs/run#run-states) attributes 
+  * `--operation` refers to valid [Run.Operation](https://developer.hashicorp.com/terraform/enterprise/api-docs/run#run-operations) attributes
+
+  ```bash
+    $ tfectl run list --workspace-id ws-NMH66XMnUeF8duTx --status "policy_checked"
+    [
+        {
+            "id": "run-zQFc5h2uPhEWW9Sr",
+            "status": "policy_checked",
+            "workspace_id": "ws-NMH66XMnUeF8duTx",
+            "workspace_name": "tfc-infra-workspace"
+        }
+    ]
+  ```
+
 * #### Bulk Queue
   * Bulk queue plans against one or many workspaces
  
