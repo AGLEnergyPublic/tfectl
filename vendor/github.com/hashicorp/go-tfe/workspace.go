@@ -160,9 +160,8 @@ type Workspace struct {
 	Organization        *Organization       `jsonapi:"relation,organization"`
 	SSHKey              *SSHKey             `jsonapi:"relation,ssh-key"`
 	Outputs             []*WorkspaceOutputs `jsonapi:"relation,outputs"`
-	// **Note: This field is still in BETA and subject to change.**
-	Project *Project `jsonapi:"relation,project"`
-	Tags    []*Tag   `jsonapi:"relation,tags"`
+	Project             *Project            `jsonapi:"relation,project"`
+	Tags                []*Tag              `jsonapi:"relation,tags"`
 
 	// Links
 	Links map[string]interface{} `jsonapi:"links,omitempty"`
@@ -195,6 +194,7 @@ type VCSRepo struct {
 	Identifier        string `jsonapi:"attr,identifier"`
 	IngressSubmodules bool   `jsonapi:"attr,ingress-submodules"`
 	OAuthTokenID      string `jsonapi:"attr,oauth-token-id"`
+	GHAInstallationID string `jsonapi:"attr,github-app-installation-id"`
 	RepositoryHTTPURL string `jsonapi:"attr,repository-http-url"`
 	ServiceProvider   string `jsonapi:"attr,service-provider"`
 	TagsRegex         string `jsonapi:"attr,tags-regex"`
@@ -376,7 +376,6 @@ type WorkspaceCreateOptions struct {
 
 	// Associated Project with the workspace. If not provided, default project
 	// of the organization will be assigned to the workspace
-	// **Note: This field is still in BETA and subject to change.**
 	Project *Project `jsonapi:"relation,project,omitempty"`
 }
 
@@ -388,6 +387,7 @@ type VCSRepoOptions struct {
 	IngressSubmodules *bool   `json:"ingress-submodules,omitempty"`
 	OAuthTokenID      *string `json:"oauth-token-id,omitempty"`
 	TagsRegex         *string `json:"tags-regex,omitempty"`
+	GHAInstallationID *string `json:"github-app-installation-id,omitempty"`
 }
 
 // WorkspaceUpdateOptions represents the options for updating a workspace.
@@ -484,7 +484,6 @@ type WorkspaceUpdateOptions struct {
 
 	// Associated Project with the workspace. If not provided, default project
 	// of the organization will be assigned to the workspace
-	// **Note: This field is still in BETA and subject to change.**
 	Project *Project `jsonapi:"relation,project,omitempty"`
 }
 
