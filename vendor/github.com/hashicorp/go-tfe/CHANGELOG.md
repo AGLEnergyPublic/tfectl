@@ -1,4 +1,11 @@
-# v1.23.0 (Unreleased)
+# v1.24.0
+
+## Enhancements
+* Adds support for a new variable field `version-id` by @arybolovlev [#697](https://github.com/hashicorp/go-tfe/pull/697)
+* Adds `ExpiredAt` field to `OrganizationToken`, `TeamToken`, and `UserToken`. This enhancement will be available in TFE release, v202305-1. @JuliannaTetreault [#672](https://github.com/hashicorp/go-tfe/pull/672)
+* Adds `ContextWithResponseHeaderHook` context for use with the ClientRequest Do method that allows callers to define a callback which receives raw http Response headers.  @apparentlymart [#689](https://github.com/hashicorp/go-tfe/pull/689)
+
+# v1.23.0
 
 ## Features
 * `ApplyToProjects` and `RemoveFromProjects` to `VariableSets` endpoints now generally available.
