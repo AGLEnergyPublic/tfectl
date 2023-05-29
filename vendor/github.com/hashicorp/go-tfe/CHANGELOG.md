@@ -1,3 +1,10 @@
+# v1.25.1
+
+## Bug Fixes
+* Workspace safe delete conflict error when workspace is locked has been restored
+to the original message using the error `ErrWorkspaceLockedCannotDelete` instead of
+`ErrWorkspaceLocked`
+
 # v1.25.0
 
 ## Enhancements
