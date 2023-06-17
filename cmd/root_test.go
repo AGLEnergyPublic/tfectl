@@ -17,6 +17,7 @@ Available Commands:
   help        Help about any command
   policy      Query TFE policies
   run         Manage TFE runs
+  tag         Query TFE tags
   team        Manage TFE teams
   variable    Manage TFE workspace variables
   workspace   Manage TFE workspaces

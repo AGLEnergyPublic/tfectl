@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -17,23 +18,25 @@ import (
 
 // WorkspaceDetail for -detail flag with list
 type WorkspaceDetail struct {
-	Name                   string `json:"name"`
-	ID                     string `json:"id"`
-	Locked                 bool   `json:"locked"`
-	ExecutionMode          string `json:"execution_mode"`
-	TerraformVersion       string `json:"terraform_version"`
-	CreatedDaysAgo         string `json:"created_days_ago"`
-	UpdatedDaysAgo         string `json:"updated_days_ago"`
-	LastRemoteRunDaysAgo   string `json:"last_remote_run_days_ago"`
-	LastStateUpdateDaysAgo string `json:"last_state_update_days_ago"`
+	Name                   string   `json:"name"`
+	ID                     string   `json:"id"`
+	Locked                 bool     `json:"locked"`
+	ExecutionMode          string   `json:"execution_mode"`
+	TerraformVersion       string   `json:"terraform_version"`
+	Tags                   []string `json:"tags"`
+	CreatedDaysAgo         string   `json:"created_days_ago"`
+	UpdatedDaysAgo         string   `json:"updated_days_ago"`
+	LastRemoteRunDaysAgo   string   `json:"last_remote_run_days_ago"`
+	LastStateUpdateDaysAgo string   `json:"last_state_update_days_ago"`
 }
 
 type Workspace struct {
-	Name             string `json:"name"`
-	ID               string `json:"id"`
-	Locked           bool   `json:"locked"`
-	ExecutionMode    string `json:"execution_mode"`
-	TerraformVersion string `json:"terraform_version"`
+	Name             string   `json:"name"`
+	ID               string   `json:"id"`
+	Locked           bool     `json:"locked"`
+	ExecutionMode    string   `json:"execution_mode"`
+	TerraformVersion string   `json:"terraform_version"`
+	Tags             []string `json:"tags"`
 }
 
 type WorkspaceLock struct {
@@ -108,8 +111,11 @@ var workspaceListCmd = &cobra.Command{
 
 				log.Debugf("Processing workspace: %s - %s", workspace.Name, workspace.ID)
 				entry := fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v,"execution_mode":"%s","terraform_version":"%s"}`, workspace.Name, workspace.ID, workspace.Locked, workspace.ExecutionMode, workspace.TerraformVersion)
+				log.Debug(entry)
 				err := json.Unmarshal([]byte(entry), &tmpWorkspace)
 				check(err)
+
+				tmpWorkspace.Tags = workspace.TagNames
 
 				workspaceList = append(workspaceList, tmpWorkspace)
 			}
@@ -385,7 +391,7 @@ func init() {
 	// List sub-command
 	workspaceCmd.AddCommand(workspaceListCmd)
 	workspaceListCmd.Flags().Bool("detail", false, "Provide details about workspace")
-	workspaceListCmd.Flags().String("filter", "", "Filter workspaces")
+	workspaceListCmd.Flags().String("filter", "", "Filter workspaces by name or by tag\nTo filter by tag, prefix filter with \"tags|\"\ne.g. \"tags|tagName,tag:Name\"")
 
 	// Get sub-command
 	workspaceCmd.AddCommand(workspaceGetCmd)
@@ -415,17 +421,30 @@ func init() {
 func listWorkspaces(client *tfe.Client, organization string, filter string) ([]*tfe.Workspace, error) {
 	results := []*tfe.Workspace{}
 	currentPage := 1
+	listOptions := &tfe.WorkspaceListOptions{
+		ListOptions: tfe.ListOptions{
+			PageSize: 50,
+		},
+	}
+
+	// Parse filter to determine if it is a filter by workspace name or tag
+	// Default behaviour is to filter by name
+	if strings.Contains(filter, "tags|") {
+		re := regexp.MustCompile(`tags\|(.*)`)
+		match := re.FindStringSubmatch(filter)
+
+		listOptions.Tags = match[1]
+	} else {
+		listOptions.Search = filter
+	}
 
 	// Go through the pages of results until there is no more pages.
 	for {
 		log.Debugf("Processing page %d.\n", currentPage)
-		options := &tfe.WorkspaceListOptions{
-			ListOptions: tfe.ListOptions{
-				PageNumber: currentPage,
-				PageSize:   50,
-			},
-			Search: filter,
-		}
+		listOptions.PageNumber = currentPage
+
+		options := listOptions
+
 		w, err := client.Workspaces.List(context.Background(), organization, options)
 		if err != nil {
 			return nil, err
@@ -465,6 +484,7 @@ func getWorkspace(client *tfe.Client, organization string, workspaceID string) (
 	result.Locked = workspaceRead.Locked
 	result.ExecutionMode = workspaceRead.ExecutionMode
 	result.TerraformVersion = workspaceRead.TerraformVersion
+	result.Tags = workspaceRead.TagNames
 	result.CreatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.CreatedAt).Hours()/24)
 	result.UpdatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.UpdatedAt).Hours()/24)
 	result.LastRemoteRunDaysAgo = workspaceDetails.LastRemoteRunDaysAgo
