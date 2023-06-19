@@ -80,29 +80,14 @@ Use "tfectl [command] --help" for more information about a command.
 * #### List
   * Run with no arguments returns the following for all workspaces in org
 
-  | **Field**         | **Description**                                             | **Type** |
-  |-------------------|-------------------------------------------------------------|----------|
-  | name              | Name of the workspace                                       | string   |
-  | id                | ID of the workspace                                         | string   |
-  | locked            | Status of the workspace                                     | bool     |
-  | execution_mode    | Whether the workspace runs remotely, locally or on an agent | string   |
-  | terraform_version | Version of Terraform CLI running in the workspace           | string   |
-  | tags              | List of tags against workspace                              | list     |
-
-  * Run with the `--detail` flag to return the following details
-
-  | **Field**                  | **Description**                                                     | **Type** |
-  |----------------------------|---------------------------------------------------------------------|----------|
-  | name                       | Name of the workspace                                               | string   |
-  | id                         | ID of the workspace                                                 | string   |
-  | locked                     | Status of the workspace                                             | bool     |
-  | execution_mode             | Whether the workspace runs remotely, locally or on an agent         | string   |
-  | terraform_version          | Version of Terraform CLI running in the workspace                   | string   |
-  | tags                       | List of tags against workspace                                      | list     |
-  | created_days_ago           | How many days ago this workspace was created                        | string   |
-  | updated_days_ago           | How many days ago this workspace was updated                        | string   |
-  | last_remote_run_days_ago   | How many days ago was a remote run performed in this workspace      | string   |
-  | last_state_update_days_ago | How many days ago was the terraform state updated in this workspace | string   |
+    | **Field**         | **Description**                                             | **Type** |
+    |-------------------|-------------------------------------------------------------|----------|
+    | name              | Name of the workspace                                       | string   |
+    | id                | ID of the workspace                                         | string   |
+    | locked            | Status of the workspace                                     | bool     |
+    | execution_mode    | Whether the workspace runs remotely, locally or on an agent | string   |
+    | terraform_version | Version of Terraform CLI running in the workspace           | string   |
+    | tags              | List of tags against workspace                              | list     |
 
   * Run with `--filter`, which takes a workspace name or a substring of a name
  
@@ -153,7 +138,21 @@ Use "tfectl [command] --help" for more information about a command.
     ]
   ```
 
-  * Run with `--detail`
+  * Run with the `--detail` flag to return the following details
+
+    | **Field**                  | **Description**                                                     | **Type** |
+    |----------------------------|---------------------------------------------------------------------|----------|
+    | name                       | Name of the workspace                                               | string   |
+    | id                         | ID of the workspace                                                 | string   |
+    | locked                     | Status of the workspace                                             | bool     |
+    | execution_mode             | Whether the workspace runs remotely, locally or on an agent         | string   |
+    | terraform_version          | Version of Terraform CLI running in the workspace                   | string   |
+    | tags                       | List of tags against workspace                                      | list     |
+    | created_days_ago           | How many days ago this workspace was created                        | string   |
+    | updated_days_ago           | How many days ago this workspace was updated                        | string   |
+    | last_remote_run_days_ago   | How many days ago was a remote run performed in this workspace      | string   |
+    | last_state_update_days_ago | How many days ago was the terraform state updated in this workspace | string   |
+
  
   ```bash 
     $ tfectl workspace list --filter workspace-1 --detail
