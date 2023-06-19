@@ -111,7 +111,6 @@ var workspaceListCmd = &cobra.Command{
 
 				log.Debugf("Processing workspace: %s - %s", workspace.Name, workspace.ID)
 				entry := fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v,"execution_mode":"%s","terraform_version":"%s"}`, workspace.Name, workspace.ID, workspace.Locked, workspace.ExecutionMode, workspace.TerraformVersion)
-				log.Debug(entry)
 				err := json.Unmarshal([]byte(entry), &tmpWorkspace)
 				check(err)
 

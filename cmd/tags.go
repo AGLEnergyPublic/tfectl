@@ -65,7 +65,7 @@ func init() {
 
 	// List sub-command
 	tagCmd.AddCommand(tagListCmd)
-	tagListCmd.Flags().String("filter", "", "Search for tag by name")
+	tagListCmd.Flags().String("filter", "", "Filters the list of all Org tags based-on those associated with a given WorkspaceId")
 }
 
 func listTags(client *tfe.Client, organization string, filter string) ([]*tfe.OrganizationTag, error) {
