@@ -78,7 +78,7 @@ Use "tfectl [command] --help" for more information about a command.
 
 ### Workspace
 * #### List
-  * Run with no arguments returns the following for all workspaces in org
+  * Run with no arguments to return the following for all workspaces in the Org
 
     | **Field**         | **Description**                                             | **Type** |
     |-------------------|-------------------------------------------------------------|----------|
@@ -89,7 +89,7 @@ Use "tfectl [command] --help" for more information about a command.
     | terraform_version | Version of Terraform CLI running in the workspace           | string   |
     | tags              | List of tags against workspace                              | list     |
 
-  * Run with `--filter`, which takes a workspace name or a substring of a name
+  * Run with `--filter`, which takes a workspace name or a substring of a name to get a filtered list of workspaces
  
   ```bash
     $ tfectl workspace list --filter workspace-1
@@ -139,6 +139,7 @@ Use "tfectl [command] --help" for more information about a command.
   ```
 
   * Run with the `--detail` flag to return the following details
+    NOTE: This task takes a long time, it rate-limited and it is recommended to run it with the `--filter` argument
 
     | **Field**                  | **Description**                                                     | **Type** |
     |----------------------------|---------------------------------------------------------------------|----------|
