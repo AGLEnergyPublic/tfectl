@@ -59,6 +59,7 @@ Available Commands:
   help        Help about any command
   policy      Query TFE policies
   run         Manage TFE runs
+  tag         Query TFE tags
   team        Manage TFE teams
   variable    Manage TFE workspace variables
   workspace   Manage TFE workspaces
@@ -77,8 +78,18 @@ Use "tfectl [command] --help" for more information about a command.
 
 ### Workspace
 * #### List
-  * Run with no arguments returns workspaceName and workspaceID for all workspaces in org
-  * Run with `--filter`
+  * Run with no arguments to return the following for all workspaces in the Org
+
+    | **Field**         | **Description**                                             | **Type** |
+    |-------------------|-------------------------------------------------------------|----------|
+    | name              | Name of the workspace                                       | string   |
+    | id                | ID of the workspace                                         | string   |
+    | locked            | Status of the workspace                                     | bool     |
+    | execution_mode    | Whether the workspace runs remotely, locally or on an agent | string   |
+    | terraform_version | Version of Terraform CLI running in the workspace           | string   |
+    | tags              | List of tags against workspace                              | list     |
+
+  * Run with `--filter`, which takes a workspace name or a substring of a name to get a filtered list of workspaces
  
   ```bash
     $ tfectl workspace list --filter workspace-1
@@ -89,11 +100,60 @@ Use "tfectl [command] --help" for more information about a command.
         "locked": false,
         "execution_mode": "remote",
         "terraform_version": "1.3.0"
+        "tags": [
+            "tag:1",
+            "tag:2"
+        ]
       }
     ]
   ```
 
-  * Run with `--detail`
+  * The `--filter` flag supports filtering by workspace tags using a prefix of `tags|`
+
+  ```bash
+    $ tfectl workspace list --filter "tags|tag:1,tag:2"
+    [
+      {
+        "name": "workspace-1",
+        "id": "ws-RZP914jsX1Hmc9Yo"
+        "locked": false,
+        "execution_mode": "remote",
+        "terraform_version": "1.3.0"
+        "tags": [
+            "tag:1",
+            "tag:2"
+        ]
+      },
+      {
+        "name": "workspace-2",
+        "id": "ws-eLcff9y8r8bRBYfj"
+        "locked": false,
+        "execution_mode": "remote",
+        "terraform_version": "1.3.7"
+        "tags": [
+            "tag:1",
+            "tag:2"
+        ]
+      }
+    ]
+  ```
+
+  * Run with the `--detail` flag to return the following details
+    NOTE: This task takes a long time, it rate-limited and it is recommended to run it with the `--filter` argument
+
+    | **Field**                  | **Description**                                                     | **Type** |
+    |----------------------------|---------------------------------------------------------------------|----------|
+    | name                       | Name of the workspace                                               | string   |
+    | id                         | ID of the workspace                                                 | string   |
+    | locked                     | Status of the workspace                                             | bool     |
+    | execution_mode             | Whether the workspace runs remotely, locally or on an agent         | string   |
+    | terraform_version          | Version of Terraform CLI running in the workspace                   | string   |
+    | tags                       | List of tags against workspace                                      | list     |
+    | created_days_ago           | How many days ago this workspace was created                        | string   |
+    | updated_days_ago           | How many days ago this workspace was updated                        | string   |
+    | last_remote_run_days_ago   | How many days ago was a remote run performed in this workspace      | string   |
+    | last_state_update_days_ago | How many days ago was the terraform state updated in this workspace | string   |
+
  
   ```bash 
     $ tfectl workspace list --filter workspace-1 --detail
@@ -103,6 +163,10 @@ Use "tfectl [command] --help" for more information about a command.
         "id": "ws-RZP914jsX1Hmc9Yo",
         "locked": false,
         "terraform_version": "1.3.0",
+        "tags": [
+            "tag:1",
+            "tag:2"
+        ]
         "created_days_ago": "819.167082",
         "updated_days_ago": "2.279692",
         "last_remote_run_days_ago": "2.281231",
