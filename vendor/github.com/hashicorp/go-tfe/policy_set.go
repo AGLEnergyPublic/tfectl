@@ -56,6 +56,12 @@ type PolicySets interface {
 	// Remove workspaces from a policy set.
 	RemoveWorkspaces(ctx context.Context, policySetID string, options PolicySetRemoveWorkspacesOptions) error
 
+	// Add projects to a policy set.
+	AddProjects(ctx context.Context, policySetID string, options PolicySetAddProjectsOptions) error
+
+	// Remove projects from a policy set.
+	RemoveProjects(ctx context.Context, policySetID string, options PolicySetRemoveProjectsOptions) error
+
 	// Delete a policy set by its ID.
 	Delete(ctx context.Context, policyID string) error
 }
@@ -73,18 +79,20 @@ type PolicySetList struct {
 
 // PolicySet represents a Terraform Enterprise policy set.
 type PolicySet struct {
-	ID             string     `jsonapi:"primary,policy-sets"`
-	Name           string     `jsonapi:"attr,name"`
-	Description    string     `jsonapi:"attr,description"`
-	Kind           PolicyKind `jsonapi:"attr,kind"`
-	Overridable    *bool      `jsonapi:"attr,overridable"`
-	Global         bool       `jsonapi:"attr,global"`
-	PoliciesPath   string     `jsonapi:"attr,policies-path"`
-	PolicyCount    int        `jsonapi:"attr,policy-count"`
-	VCSRepo        *VCSRepo   `jsonapi:"attr,vcs-repo"`
-	WorkspaceCount int        `jsonapi:"attr,workspace-count"`
-	CreatedAt      time.Time  `jsonapi:"attr,created-at,iso8601"`
-	UpdatedAt      time.Time  `jsonapi:"attr,updated-at,iso8601"`
+	ID           string     `jsonapi:"primary,policy-sets"`
+	Name         string     `jsonapi:"attr,name"`
+	Description  string     `jsonapi:"attr,description"`
+	Kind         PolicyKind `jsonapi:"attr,kind"`
+	Overridable  *bool      `jsonapi:"attr,overridable"`
+	Global       bool       `jsonapi:"attr,global"`
+	PoliciesPath string     `jsonapi:"attr,policies-path"`
+	// **Note: This field is still in BETA and subject to change.**
+	PolicyCount    int       `jsonapi:"attr,policy-count"`
+	VCSRepo        *VCSRepo  `jsonapi:"attr,vcs-repo"`
+	WorkspaceCount int       `jsonapi:"attr,workspace-count"`
+	ProjectCount   int       `jsonapi:"attr,project-count"`
+	CreatedAt      time.Time `jsonapi:"attr,created-at,iso8601"`
+	UpdatedAt      time.Time `jsonapi:"attr,updated-at,iso8601"`
 
 	// Relations
 	// The organization to which the policy set belongs to.
@@ -99,6 +107,9 @@ type PolicySet struct {
 	NewestVersion *PolicySetVersion `jsonapi:"relation,newest-version"`
 	// The most recent successful policy set version.
 	CurrentVersion *PolicySetVersion `jsonapi:"relation,current-version"`
+	// **Note: This field is still in BETA and subject to change.**
+	// The projects to which the policy set applies.
+	Projects []*Project `jsonapi:"relation,projects"`
 }
 
 // PolicySetIncludeOpt represents the available options for include query params.
@@ -110,6 +121,8 @@ const (
 	PolicySetWorkspaces     PolicySetIncludeOpt = "workspaces"
 	PolicySetCurrentVersion PolicySetIncludeOpt = "current_version"
 	PolicySetNewestVersion  PolicySetIncludeOpt = "newest_version"
+	// **Note: This field is still in BETA and subject to change.**
+	PolicySetProjects PolicySetIncludeOpt = "projects"
 )
 
 // PolicySetListOptions represents the options for listing policy sets.
@@ -179,6 +192,10 @@ type PolicySetCreateOptions struct {
 
 	// Optional: The initial list of workspaces for which the policy set should be enforced.
 	Workspaces []*Workspace `jsonapi:"relation,workspaces,omitempty"`
+
+	// **Note: This field is still in BETA and subject to change.**
+	// Optional: The initial list of projects for which the policy set should be enforced.
+	Projects []*Project `jsonapi:"relation,projects,omitempty"`
 }
 
 // PolicySetUpdateOptions represents the options for updating a policy set.
@@ -242,6 +259,20 @@ type PolicySetAddWorkspacesOptions struct {
 type PolicySetRemoveWorkspacesOptions struct {
 	// The workspaces to remove from the policy set.
 	Workspaces []*Workspace
+}
+
+// PolicySetAddProjectsOptions represents the options for adding projects
+// to a policy set.
+type PolicySetAddProjectsOptions struct {
+	// The projects to add to the policy set.
+	Projects []*Project
+}
+
+// PolicySetRemoveProjectsOptions represents the options for removing
+// projects from a policy set.
+type PolicySetRemoveProjectsOptions struct {
+	// The projects to remove from the policy set.
+	Projects []*Project
 }
 
 // List all the policies for a given organization.
@@ -414,6 +445,42 @@ func (s *policySets) RemoveWorkspaces(ctx context.Context, policySetID string, o
 	return req.Do(ctx, nil)
 }
 
+// AddProjects adds projects to a given policy set.
+func (s *policySets) AddProjects(ctx context.Context, policySetID string, options PolicySetAddProjectsOptions) error {
+	if !validStringID(&policySetID) {
+		return ErrInvalidPolicySetID
+	}
+	if err := options.valid(); err != nil {
+		return err
+	}
+
+	u := fmt.Sprintf("policy-sets/%s/relationships/projects", url.QueryEscape(policySetID))
+	req, err := s.client.NewRequest("POST", u, options.Projects)
+	if err != nil {
+		return err
+	}
+
+	return req.Do(ctx, nil)
+}
+
+// RemoveProjects removes projects from a policy set.
+func (s *policySets) RemoveProjects(ctx context.Context, policySetID string, options PolicySetRemoveProjectsOptions) error {
+	if !validStringID(&policySetID) {
+		return ErrInvalidPolicySetID
+	}
+	if err := options.valid(); err != nil {
+		return err
+	}
+
+	u := fmt.Sprintf("policy-sets/%s/relationships/projects", url.QueryEscape(policySetID))
+	req, err := s.client.NewRequest("DELETE", u, options.Projects)
+	if err != nil {
+		return err
+	}
+
+	return req.Do(ctx, nil)
+}
+
 // Delete a policy set by its ID.
 func (s *policySets) Delete(ctx context.Context, policySetID string) error {
 	if !validStringID(&policySetID) {
@@ -445,6 +512,16 @@ func (o PolicySetRemoveWorkspacesOptions) valid() error {
 	}
 	if len(o.Workspaces) == 0 {
 		return ErrWorkspaceMinLimit
+	}
+	return nil
+}
+
+func (o PolicySetRemoveProjectsOptions) valid() error {
+	if o.Projects == nil {
+		return ErrRequiredProject
+	}
+	if len(o.Projects) == 0 {
+		return ErrProjectMinLimit
 	}
 	return nil
 }
@@ -486,6 +563,16 @@ func (o PolicySetAddWorkspacesOptions) valid() error {
 	return nil
 }
 
+func (o PolicySetAddProjectsOptions) valid() error {
+	if o.Projects == nil {
+		return ErrRequiredProject
+	}
+	if len(o.Projects) == 0 {
+		return ErrProjectMinLimit
+	}
+	return nil
+}
+
 func (o *PolicySetReadOptions) valid() error {
 	if o == nil {
 		return nil // nothing to validate
@@ -501,7 +588,7 @@ func (o *PolicySetReadOptions) valid() error {
 func validatePolicySetIncludeParams(params []PolicySetIncludeOpt) error {
 	for _, p := range params {
 		switch p {
-		case PolicySetPolicies, PolicySetWorkspaces, PolicySetCurrentVersion, PolicySetNewestVersion:
+		case PolicySetPolicies, PolicySetWorkspaces, PolicySetCurrentVersion, PolicySetNewestVersion, PolicySetProjects:
 			// do nothing
 		default:
 			return ErrInvalidIncludeValue
