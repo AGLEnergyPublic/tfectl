@@ -22,6 +22,7 @@
     help        Help about any command
     policy      Query TFE policies
     run         Manage TFE runs
+    tag         Query TFE tags
     team        Manage TFE teams
     variable    Manage TFE workspace variables
     workspace   Manage TFE workspaces
@@ -31,7 +32,7 @@
     -h, --help                  help for tfectl
     -l, --log string            log level (debug, info, warn, error, fatal, panic)
     -o, --organization string   terraform organization or set TFE_ORG
-    -q, --query string          JMESPath compatible query to parse JSON output
+    -q, --query string          JQ compatible query to parse JSON output
     -t, --token string          terraform token or set TFE_TOKEN
     -v, --version               version for tfectl
 
@@ -69,7 +70,7 @@ Flags:
   -h, --help                  help for tfectl
   -l, --log string            log level (debug, info, warn, error, fatal, panic)
   -o, --organization string   terraform organization or set TFE_ORG
-  -q, --query string          JMESPath compatible query to parse JSON output
+  -q, --query string          JQ compatible query to parse JSON output
   -t, --token string          terraform token or set TFE_TOKEN
   -v, --version               version for tfectl
 
@@ -501,6 +502,43 @@ Use "tfectl [command] --help" for more information about a command.
         "policy_set_count": 1
       }
     ]
+  ```
+
+### Tag
+* Query Organization tag information in TFE/TFC
+
+* #### List
+  * The `--filter` flag takes a comma separated list of workspaceIds, and returns a list of all organization tags excluding the tags associated with these workspaces
+  ```bash
+    $ tfectl tag list --filter ws-ojAyfT3ar4oXt3eA
+	[
+		{
+			"name": "tag:infrastructure",
+			"id": "tag-kuyrvHJPWUNY6BCG",
+			"instance_count": 1
+		},
+		{
+			"name": "tag:application1",
+			"id": "tag-X8oXEEMsNoU61D99",
+			"instance_count": 2
+		},
+		{
+			"name": "tag:application2",
+			"id": "tag-49e9MLKrGFyLS9aT",
+			"instance_count": 2
+		}
+	]
+  ```
+  * The `--search` flag returns details of the specified organization tag
+  ```bash
+	$ tfectl tag list --search "tag:infrastructure"
+	[
+		{
+			"name": "tag:infrastructure",
+			"id": "tag-kuyrvHJPWUNY6BCG",
+			"instance_count": 1
+		}
+	]
   ```
 
 ### Build
