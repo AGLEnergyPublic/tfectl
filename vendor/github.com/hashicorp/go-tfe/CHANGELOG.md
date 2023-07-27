@@ -1,5 +1,17 @@
 # UNRELEASED
 
+# v1.31.0
+
+## Enhancements
+* Added BETA support for including `projects` relationship and `projects-count` attribute to policy_set on create by @hs26gill [#737](https://github.com/hashicorp/go-tfe/pull/737)
+* Added BETA method `AddProjects` and `RemoveProjects` for attaching/detaching policy set to projects by @Netra2104 [#735](https://github.com/hashicorp/go-tfe/pull/735)
+
+# v1.30.0
+
+## Enhancements
+* Adds `SignatureSigningMethod` and `SignatureDigestMethod` fields in `AdminSAMLSetting` struct by @karvounis-form3 [#731](https://github.com/hashicorp/go-tfe/pull/731)
+* Adds `Certificate`, `PrivateKey`, `TeamManagementEnabled`, `AuthnRequestsSigned`, `WantAssertionsSigned`, `SignatureSigningMethod`, `SignatureDigestMethod` fields in `AdminSAMLSettingsUpdateOptions` struct by @karvounis-form3 [#731](https://github.com/hashicorp/go-tfe/pull/731)
+
 # v1.29.0
 
 ## Enhancements
