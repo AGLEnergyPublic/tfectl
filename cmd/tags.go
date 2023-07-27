@@ -34,8 +34,9 @@ var tagListCmd = &cobra.Command{
 
 		filter, _ := cmd.Flags().GetString("filter")
 		query, _ := cmd.Flags().GetString("query")
+		search, _ := cmd.Flags().GetString("search")
 
-		tags, err := listTags(client, organization, filter)
+		tags, err := listTags(client, organization, filter, search)
 		check(err)
 
 		var tagList []Tag
@@ -66,9 +67,10 @@ func init() {
 	// List sub-command
 	tagCmd.AddCommand(tagListCmd)
 	tagListCmd.Flags().String("filter", "", "Filters the list of all Org tags based-on those associated with a given WorkspaceId")
+	tagListCmd.Flags().String("search", "", "A search query string. Organization tags are searchable by name likeness, takes precedence over --filter")
 }
 
-func listTags(client *tfe.Client, organization string, filter string) ([]*tfe.OrganizationTag, error) {
+func listTags(client *tfe.Client, organization string, filter string, search string) ([]*tfe.OrganizationTag, error) {
 	log.Debugf("Filter: %s", filter)
 	results := []*tfe.OrganizationTag{}
 	currentPage := 1
@@ -81,6 +83,7 @@ func listTags(client *tfe.Client, organization string, filter string) ([]*tfe.Or
 				PageSize:   50,
 			},
 			Filter: filter,
+			Query:  search,
 		}
 
 		p, err := client.OrganizationTags.List(context.Background(), organization, options)
