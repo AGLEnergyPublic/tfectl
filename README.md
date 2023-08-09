@@ -542,20 +542,17 @@ Use "tfectl [command] --help" for more information about a command.
   ```
 
 ### Build
-* Using GNU Make
-```bash
-  make build
-```
+GoReleaser is used to produce binaries for multiple platforms (Windows, Mac, Linux).
 
-* Linux 
-```bash
-  $ make linux
-```
+To build all binaries locally:
 
-* Windows
+- Install GoReleaser https://goreleaser.com/install/
+- Run the build target command:
+
 ```bash
-  $ make windows
+  $ make build
 ```
+- Binaries will be built and output to the `/dist` folder.
 
 ## Contributing
 * see `CONTRIBUTING.md`
