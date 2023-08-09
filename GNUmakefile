@@ -19,13 +19,8 @@ fmt:
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/fmtcheck.sh'"
 
-build: linux windows
-
-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -o bin/tfectl_linux_x86_64
-
-windows:
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags '-extldflags "-static"' -o bin/tfectl_win_x86_64
+build:
+	goreleaser release --snapshot --clean
 
 test:
 	@echo "==> Testing <=="
