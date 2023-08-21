@@ -1,4 +1,7 @@
-# UNRELEASED
+# v1.32.1
+
+## Dependency Update
+* Updated go-slug dependency to v0.12.1
 
 # v1.32.0
 
