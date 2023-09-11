@@ -56,6 +56,14 @@ type PolicySets interface {
 	// Remove workspaces from a policy set.
 	RemoveWorkspaces(ctx context.Context, policySetID string, options PolicySetRemoveWorkspacesOptions) error
 
+	// Add workspace exclusions to a policy set.
+	// **Note: This function is still in BETA and subject to change.**
+	AddWorkspaceExclusions(ctx context.Context, policySetID string, options PolicySetAddWorkspaceExclusionsOptions) error
+
+	// Remove workspace exclusions from a policy set.
+	// **Note: This function is still in BETA and subject to change.**
+	RemoveWorkspaceExclusions(ctx context.Context, policySetID string, options PolicySetRemoveWorkspaceExclusionsOptions) error
+
 	// Add projects to a policy set.
 	AddProjects(ctx context.Context, policySetID string, options PolicySetAddProjectsOptions) error
 
@@ -108,6 +116,9 @@ type PolicySet struct {
 	// The most recent successful policy set version.
 	CurrentVersion *PolicySetVersion `jsonapi:"relation,current-version"`
 	// **Note: This field is still in BETA and subject to change.**
+	// The workspace exclusions to which the policy set applies.
+	WorkspaceExclusions []*Workspace `jsonapi:"relation,workspace-exclusions"`
+	// **Note: This field is still in BETA and subject to change.**
 	// The projects to which the policy set applies.
 	Projects []*Project `jsonapi:"relation,projects"`
 }
@@ -122,7 +133,8 @@ const (
 	PolicySetCurrentVersion PolicySetIncludeOpt = "current_version"
 	PolicySetNewestVersion  PolicySetIncludeOpt = "newest_version"
 	// **Note: This field is still in BETA and subject to change.**
-	PolicySetProjects PolicySetIncludeOpt = "projects"
+	PolicySetWorkspaceExclusions PolicySetIncludeOpt = "workspace_exclusions"
+	PolicySetProjects            PolicySetIncludeOpt = "projects"
 )
 
 // PolicySetListOptions represents the options for listing policy sets.
@@ -194,6 +206,10 @@ type PolicySetCreateOptions struct {
 	Workspaces []*Workspace `jsonapi:"relation,workspaces,omitempty"`
 
 	// **Note: This field is still in BETA and subject to change.**
+	// Optional: The initial list of workspace exclusions for which the policy set should be enforced.
+	WorkspaceExclusions []*Workspace `jsonapi:"relation,workspace-exclusions,omitempty"`
+
+	// **Note: This field is still in BETA and subject to change.**
 	// Optional: The initial list of projects for which the policy set should be enforced.
 	Projects []*Project `jsonapi:"relation,projects,omitempty"`
 }
@@ -259,6 +275,18 @@ type PolicySetAddWorkspacesOptions struct {
 type PolicySetRemoveWorkspacesOptions struct {
 	// The workspaces to remove from the policy set.
 	Workspaces []*Workspace
+}
+
+// PolicySetAddWorkspaceExclusionsOptions represents the options for adding workspace exclusions to a policy set.
+type PolicySetAddWorkspaceExclusionsOptions struct {
+	// The workspaces to add to the policy set exclusion list.
+	WorkspaceExclusions []*Workspace
+}
+
+// PolicySetRemoveWorkspaceExclusionsOptions represents the options for removing workspace exclusions from a policy set.
+type PolicySetRemoveWorkspaceExclusionsOptions struct {
+	// The workspaces to remove from the policy set exclusion list.
+	WorkspaceExclusions []*Workspace
 }
 
 // PolicySetAddProjectsOptions represents the options for adding projects
@@ -445,6 +473,42 @@ func (s *policySets) RemoveWorkspaces(ctx context.Context, policySetID string, o
 	return req.Do(ctx, nil)
 }
 
+// AddWorkspaceExclusions adds workspace exclusions to a policy set.
+func (s *policySets) AddWorkspaceExclusions(ctx context.Context, policySetID string, options PolicySetAddWorkspaceExclusionsOptions) error {
+	if !validStringID(&policySetID) {
+		return ErrInvalidPolicySetID
+	}
+	if err := options.valid(); err != nil {
+		return err
+	}
+
+	u := fmt.Sprintf("policy-sets/%s/relationships/workspace-exclusions", url.QueryEscape(policySetID))
+	req, err := s.client.NewRequest("POST", u, options.WorkspaceExclusions)
+	if err != nil {
+		return err
+	}
+
+	return req.Do(ctx, nil)
+}
+
+// RemoveWorkspaceExclusions removes workspace exclusions from a policy set.
+func (s *policySets) RemoveWorkspaceExclusions(ctx context.Context, policySetID string, options PolicySetRemoveWorkspaceExclusionsOptions) error {
+	if !validStringID(&policySetID) {
+		return ErrInvalidPolicySetID
+	}
+	if err := options.valid(); err != nil {
+		return err
+	}
+
+	u := fmt.Sprintf("policy-sets/%s/relationships/workspace-exclusions", url.QueryEscape(policySetID))
+	req, err := s.client.NewRequest("DELETE", u, options.WorkspaceExclusions)
+	if err != nil {
+		return err
+	}
+
+	return req.Do(ctx, nil)
+}
+
 // AddProjects adds projects to a given policy set.
 func (s *policySets) AddProjects(ctx context.Context, policySetID string, options PolicySetAddProjectsOptions) error {
 	if !validStringID(&policySetID) {
@@ -516,6 +580,16 @@ func (o PolicySetRemoveWorkspacesOptions) valid() error {
 	return nil
 }
 
+func (o PolicySetRemoveWorkspaceExclusionsOptions) valid() error {
+	if o.WorkspaceExclusions == nil {
+		return ErrWorkspacesRequired
+	}
+	if len(o.WorkspaceExclusions) == 0 {
+		return ErrWorkspaceMinLimit
+	}
+	return nil
+}
+
 func (o PolicySetRemoveProjectsOptions) valid() error {
 	if o.Projects == nil {
 		return ErrRequiredProject
@@ -563,6 +637,16 @@ func (o PolicySetAddWorkspacesOptions) valid() error {
 	return nil
 }
 
+func (o PolicySetAddWorkspaceExclusionsOptions) valid() error {
+	if o.WorkspaceExclusions == nil {
+		return ErrWorkspacesRequired
+	}
+	if len(o.WorkspaceExclusions) == 0 {
+		return ErrWorkspaceMinLimit
+	}
+	return nil
+}
+
 func (o PolicySetAddProjectsOptions) valid() error {
 	if o.Projects == nil {
 		return ErrRequiredProject
@@ -588,7 +672,7 @@ func (o *PolicySetReadOptions) valid() error {
 func validatePolicySetIncludeParams(params []PolicySetIncludeOpt) error {
 	for _, p := range params {
 		switch p {
-		case PolicySetPolicies, PolicySetWorkspaces, PolicySetCurrentVersion, PolicySetNewestVersion, PolicySetProjects:
+		case PolicySetPolicies, PolicySetWorkspaces, PolicySetCurrentVersion, PolicySetNewestVersion, PolicySetWorkspaceExclusions, PolicySetProjects:
 			// do nothing
 		default:
 			return ErrInvalidIncludeValue
