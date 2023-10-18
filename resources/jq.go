@@ -3,9 +3,14 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+
 	jq "github.com/itchyny/gojq"
 	log "github.com/sirupsen/logrus"
 )
+
+// Constructor
+var inputConstr func() interface{}
 
 func JqRun(jsonStr []byte, query string) {
 	q, err := jq.Parse(query)
@@ -13,7 +18,23 @@ func JqRun(jsonStr []byte, query string) {
 		log.Fatal(err)
 	}
 
-	var input []interface{}
+	rt := reflect.TypeOf(jsonStr)
+	switch rt.Kind() {
+	case reflect.Slice, reflect.Array:
+		inputConstr = func() interface{} {
+			c := new([]interface{})
+			return *c
+		}
+	case reflect.Map:
+		inputConstr = func() interface{} {
+			c := new(map[string]interface{})
+			return *c
+		}
+	default:
+		log.Fatalf("input stream cannot be parsed!")
+	}
+
+	var input = inputConstr()
 	var output []interface{}
 	var outputJsonStr []byte
 
@@ -34,6 +55,7 @@ func JqRun(jsonStr []byte, query string) {
 		}
 		output = append(output, v)
 	}
+
 	outputJsonStr, _ = json.MarshalIndent(output, "", "  ")
 	fmt.Println(string(outputJsonStr))
 }

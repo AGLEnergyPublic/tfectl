@@ -40,12 +40,13 @@ var runListCmd = &cobra.Command{
 		status, _ := cmd.Flags().GetString("status")
 		operation, _ := cmd.Flags().GetString("operation")
 		query, _ := cmd.Flags().GetString("query")
+		getLatest, _ := cmd.Flags().GetBool("latest")
 
 		// Get workspaceName by ID
 		workspaceName, _ := getWorkspaceNameByID(client, organization, workspaceID)
 
 		// List runs in workspace
-		runs, _ := listRun(client, workspaceID, status, operation)
+		runs, _ := listRun(client, workspaceID, status, operation, getLatest)
 
 		var runJson []byte
 		var runList []Run
@@ -377,6 +378,7 @@ func init() {
 	runListCmd.Flags().String("workspace-id", "", "WorkspaceID of the TFE workspace")
 	runListCmd.Flags().String("status", "", "Filter by run status")
 	runListCmd.Flags().String("operation", "", "Filter by run operation")
+	runListCmd.Flags().Bool("latest", false, "Returns latest run")
 
 	// Queue sub-command
 	runQueueCmd.Flags().String("filter", "", "Queue plans on workspaces matching filter")          // Mutually exclusive with `ids`
@@ -400,7 +402,7 @@ func init() {
 
 }
 
-func listRun(client *tfe.Client, workspaceID string, status string, operation string) ([]*tfe.Run, error) {
+func listRun(client *tfe.Client, workspaceID string, status string, operation string, latest bool) ([]*tfe.Run, error) {
 	results := []*tfe.Run{}
 	// We only care about the first few runs at this point
 	currentPage := 1
@@ -419,7 +421,12 @@ func listRun(client *tfe.Client, workspaceID string, status string, operation st
 	if err != nil {
 		return nil, err
 	}
-	results = append(results, r.Items...)
+
+	if latest {
+		results = append(results, r.Items[0])
+	} else {
+		results = append(results, r.Items...)
+	}
 
 	return results, nil
 }

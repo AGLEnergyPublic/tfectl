@@ -16,6 +16,7 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   policy      Query TFE policies
+  policy-set  Query TFE policy sets
   run         Manage TFE runs
   tag         Query TFE tags
   team        Manage TFE teams
