@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/go-tfe v1.37.0
 	github.com/itchyny/gojq v0.12.13
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 )
 
