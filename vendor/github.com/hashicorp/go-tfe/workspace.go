@@ -198,6 +198,7 @@ type VCSRepo struct {
 	GHAInstallationID string `jsonapi:"attr,github-app-installation-id"`
 	RepositoryHTTPURL string `jsonapi:"attr,repository-http-url"`
 	ServiceProvider   string `jsonapi:"attr,service-provider"`
+	Tags              bool   `jsonapi:"attr,tags"`
 	TagsRegex         string `jsonapi:"attr,tags-regex"`
 	WebhookURL        string `jsonapi:"attr,webhook-url"`
 }
@@ -1266,39 +1267,10 @@ func (o WorkspaceRemoveTagsOptions) valid() error {
 }
 
 func (o *WorkspaceListOptions) valid() error {
-	if o == nil {
-		return nil // nothing to validate
-	}
-
-	if err := validateWorkspaceIncludeParams(o.Include); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (o *WorkspaceReadOptions) valid() error {
-	if o == nil {
-		return nil // nothing to validate
-	}
-
-	if err := validateWorkspaceIncludeParams(o.Include); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func validateWorkspaceIncludeParams(params []WSIncludeOpt) error {
-	for _, p := range params {
-		switch p {
-		case WSOrganization, WSCurrentConfigVer, WSCurrentConfigVerIngress, WSCurrentRun, WSCurrentRunPlan, WSCurrentRunConfigVer, WSCurrentrunConfigVerIngress, WSLockedBy, WSReadme, WSOutputs, WSCurrentStateVer:
-			// do nothing
-		default:
-			return ErrInvalidIncludeValue
-		}
-	}
-
 	return nil
 }
 
