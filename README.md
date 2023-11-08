@@ -1,5 +1,4 @@
 # tfectl
-[![Tests](https://github.com/AGLEnergyPublic/tfectl/actions/workflows/go.yml/badge.svg)](https://github.com/AGLEnergyPublic/tfectl/actions/workflows/go.yml)
 [![GitHub license](https://img.shields.io/github/license/AGLEnergyPublic/tfectl.svg)](https://github.com/AGLEnergyPublic/tfectl/blob/main/LICENSE)
 [![GoDoc](https://godoc.org/github.com/AGLEnergyPublic/tfectl?status.svg)](https://godoc.org/github.com/AGLEnergyPublic/tfectl)
 [![Go Report Card](https://goreportcard.com/badge/github.com/AGLEnergyPublic/tfectl)](https://goreportcard.com/report/github.com/AGLEnergyPublic/tfectl)
