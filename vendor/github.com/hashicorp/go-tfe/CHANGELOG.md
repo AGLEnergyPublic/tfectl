@@ -1,6 +1,15 @@
 # UNRELEASED
-<!-- Add CHANGELOG entry to this section for any PR awaiting the next release -->
-<!-- Please also include if this is a Bug Fix, Enhancement, or Feature -->
+
+# v1.40.0
+
+## Bug Fixes
+* Removed unused field `AgentPoolID` from the Workspace model. (Callers should be using the `AgentPool` relation instead) by @brandonc [#815](https://github.com/hashicorp/go-tfe/pull/815)
+
+## Enhancements
+* Add organization scope field for oauth clients by @Netra2104 [#812](https://github.com/hashicorp/go-tfe/pull/812)
+* Added BETA support for including `projects` relationship to oauth_client on create by @Netra2104 [#806](https://github.com/hashicorp/go-tfe/pull/806)
+* Added BETA method `AddProjects` and `RemoveProjects` for attaching/detaching oauth_client to projects by Netra2104 [#806](https://github.com/hashicorp/go-tfe/pull/806)
+* Adds a missing interface `WorkspaceResources` and the `List` method by @stefan-kiss [Issue#754](https://github.com/hashicorp/go-tfe/issues/754) 
 
 # v1.39.2
 
