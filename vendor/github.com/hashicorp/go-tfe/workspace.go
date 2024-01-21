@@ -190,6 +190,9 @@ type Workspace struct {
 	// **Note: This functionality is only available in Terraform Enterprise.**
 	DataRetentionPolicy *DataRetentionPolicy `jsonapi:"relation,data-retention-policy"`
 
+	// **Note: This functionality is only available in Terraform Enterprise.**
+	DataRetentionPolicy *DataRetentionPolicy `jsonapi:"relation,data-retention-policy"`
+
 	// Links
 	Links map[string]interface{} `jsonapi:"links,omitempty"`
 }
