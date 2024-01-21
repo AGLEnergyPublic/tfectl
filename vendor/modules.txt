@@ -15,13 +15,13 @@ github.com/hashicorp/go-retryablehttp
 github.com/hashicorp/go-slug
 github.com/hashicorp/go-slug/internal/ignorefiles
 github.com/hashicorp/go-slug/internal/unpackinfo
-# github.com/hashicorp/go-tfe v1.41.0
+# github.com/hashicorp/go-tfe v1.42.0
 ## explicit; go 1.19
 github.com/hashicorp/go-tfe
 # github.com/hashicorp/go-version v1.6.0
 ## explicit
 github.com/hashicorp/go-version
-# github.com/hashicorp/jsonapi v0.0.0-20210826224640-ee7dae0fb22d
+# github.com/hashicorp/jsonapi v1.2.0
 ## explicit
 github.com/hashicorp/jsonapi
 # github.com/inconshreveable/mousetrap v1.1.0

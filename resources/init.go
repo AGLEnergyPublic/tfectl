@@ -2,9 +2,12 @@ package resources
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	tfe "github.com/hashicorp/go-tfe"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -40,12 +43,12 @@ func getToken(cmd *cobra.Command) (string, error) {
 func newClient(token string) (*tfe.Client, error) {
 
 	// Read the environment variable as a fallback.
-	Address := os.Getenv("TFE_ADDRESS")
+	address := os.Getenv("TFE_ADDRESS")
 
 	// Prepare TFE config.
 	config := &tfe.Config{
 		Token:   token,
-		Address: Address,
+		Address: address,
 	}
 
 	// Create TFE client.
@@ -75,6 +78,31 @@ func Setup(cmd *cobra.Command) (organization string, client *tfe.Client, err err
 	if err != nil {
 		err = fmt.Errorf("cannot create TFE client: %s", err)
 	}
+
+	return
+}
+
+func HttpClientSetup(cmd *cobra.Command, method string, endpoint string, body io.Reader) (req *http.Request, err error) {
+
+	address := os.Getenv("TFE_ADDRESS")
+
+	token, err := getToken(cmd)
+	if err != nil {
+		return nil, fmt.Errorf("no token specified: %s", err)
+	}
+
+	e := fmt.Sprintf("/api/v2/%s", endpoint)
+	u := fmt.Sprintf("%s%s", address, e)
+	log.Debug(u)
+
+	req, err = http.NewRequest(method, u, body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create http request: %s", err)
+	}
+
+	bearerHeader := fmt.Sprintf("Bearer %s", token)
+	req.Header.Set("Authorization", bearerHeader)
+	req.Header.Set("Content-Type", "application/vnd.api+json")
 
 	return
 }

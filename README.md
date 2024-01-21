@@ -16,15 +16,17 @@
     tfectl [command]
 
   Available Commands:
-    admin       Manage TFE admin operations
-    completion  Generate the autocompletion script for the specified shell
-    help        Help about any command
-    policy      Query TFE policies
-    run         Manage TFE runs
-    tag         Query TFE tags
-    team        Manage TFE teams
-    variable    Manage TFE workspace variables
-    workspace   Manage TFE workspaces
+    admin        Manage TFE admin operations
+    completion   Generate the autocompletion script for the specified shell
+    help         Help about any command
+    policy       Query TFE policies
+    policy-check Manage policy check workflows of a TFE run
+    policy-set   Query TFE policy sets
+    run          Manage TFE runs
+    tag          Query TFE tags
+    team         Manage TFE teams
+    variable     Manage TFE workspace variables
+    workspace    Manage TFE workspaces
 
 
   Flags:
@@ -54,15 +56,17 @@ Usage:
   tfectl [command]
 
 Available Commands:
-  admin       Manage TFE admin operations
-  completion  Generate the autocompletion script for the specified shell
-  help        Help about any command
-  policy      Query TFE policies
-  run         Manage TFE runs
-  tag         Query TFE tags
-  team        Manage TFE teams
-  variable    Manage TFE workspace variables
-  workspace   Manage TFE workspaces
+  admin        Manage TFE admin operations
+  completion   Generate the autocompletion script for the specified shell
+  help         Help about any command
+  policy       Query TFE policies
+  policy-check Manage policy check workflows of a TFE run
+  policy-set   Query TFE policy sets
+  run          Manage TFE runs
+  tag          Query TFE tags
+  team         Manage TFE teams
+  variable     Manage TFE workspace variables
+  workspace    Manage TFE workspaces
 
 
 Flags:
@@ -77,6 +81,9 @@ Use "tfectl [command] --help" for more information about a command.
 ```
 
 ### Workspace
+<details>
+    <summary>Workspace Operations</summary>
+
 * #### List
   * Run with no arguments to return the following for all workspaces in the Org
 
@@ -229,7 +236,12 @@ Use "tfectl [command] --help" for more information about a command.
       }
     ]
   ```
+</details>
+
 ### Runs
+<details>
+    <summary>Run Operations</summary>
+
 * `run` sub-command lets you manage runs against one or more workspaces
 * #### List run
   * List runs in workspace specified by workspaceID
@@ -292,7 +304,12 @@ Use "tfectl [command] --help" for more information about a command.
       }
     ]
   ```
+</details>
+
 ### Variables
+<details>
+    <summary>Variable Operations</summary>
+
 * CRUD operations on workspace variables
 * #### Query/List workspace variables
   ```bash
@@ -443,8 +460,12 @@ Use "tfectl [command] --help" for more information about a command.
       }
     ]
   ```
+</details>
 
 ### Admin
+<details>
+    <summary>Admin Operations - TFE ONLY</summary>
+
 * Perform Admin operations supported by the TFE Admin API.
 * NOTE: Admin settings are only available in Terraform Enterprise.
 
@@ -485,8 +506,12 @@ Use "tfectl [command] --help" for more information about a command.
         }
     ]
   ```
+</details>
 
 ### Policy
+<details>
+    <summary>Policy Operations</summary>
+
 * Query policies in TFE/TFC
 
 * #### List
@@ -502,8 +527,12 @@ Use "tfectl [command] --help" for more information about a command.
       }
     ]
   ```
+</details>
 
 ### Tag
+<details>
+    <summary>Tag Operations</summary>
+
 * Query Organization tag information in TFE/TFC
 
 * #### List
@@ -539,6 +568,107 @@ Use "tfectl [command] --help" for more information about a command.
 		}
 	]
   ```
+</details>
+
+### Policy Set
+<details>
+    <summary>Policy Set Operations</summary>
+* Query policy sets in TFE/TFC
+
+* #### 1. List
+  * Lists all policy sets
+  ```bash
+    $ tfectl policy-set list
+    [
+        {
+            "id": "polset-7586a2UeKeNgPD3s",
+            "name": "dev-policy-set",
+            "kind": "sentinel",
+            "global": false,
+            "workspaces": null,
+            "workspace_count": 5,
+            "workspace_exclusions": null,
+            "projects": [
+                "prj-LsSPiJnMYl7tSMZ"
+            ],
+            "project_count": 1,
+            "policies": [
+                "pol-B3pWfMyAzR2VtQI"
+            ],
+            "policy_count": 1
+        },
+        {
+            "id": "polset-Q8zN9Q6TfMVs8mu",
+            "name": "prod-policy-set",
+            "kind": "sentinel",
+            "global": false,
+            "workspaces": null,
+            "workspace_count": 10,
+            "workspace_exclusions": null,
+            "projects": [
+                "prj-yOtqzR2msFUFCDx"
+            ],
+            "project_count": 1,
+            "policies": [
+                "pol-Lm0WgxPdwUm2zGE",
+                "pol-crBeEEB5b8EZtaB"
+            ],
+            "policy_count": 2
+        }
+    ]
+  ```
+</details>
+
+### Policy Check
+<details>
+    <summary>Policy Check Operations</summary>
+
+* Examine the details of a policy check performed against a given RunID
+
+* #### 1. Show
+  * Generates the details of a policy check performed against a RunID
+  ```bash
+    $ tfectl policy-check show --run-id run-A8PuL0GnIeldng1
+    {
+        "id": "polchk-ndVuh5Y2abygp5fu",
+        "result": {
+            "advisory_failed": 2,
+            "hard_failed": 0,
+            "passed": 46,
+            "result": true,
+            "soft_failed": 0,
+            "total_failed": 2,
+            "sentinel": {
+                "data": {
+                    "policy-set-01": {
+                        "error": null,
+                        "policies": [
+                            {
+                                "error": null
+                                # OUTPUT TRUNCATED
+                            } # OUTPUT TRUNCATED
+                        ] # OUTPUT TRUNCATED
+                    } # OUTPUT TRUNCATED
+                }
+            }
+        }
+    }
+  ```
+  * To query only those checks which have failedd
+  ```bash
+    $ tfectl policy-check show --run-id run-Wxk42edRCCLB5fMi --query '.result.sentinel.data | to_entries | .[].value.policies | .[] | select(.result|not) | .policy'
+    [
+        {
+            "enforcement-level": "advisory",
+            "name": "policy-set-01/deploy-to-approved-regions"
+        },
+        {
+            "enforcement-level": "advisory",
+            "name": "policy-set-02/iaas-allowed-vm-skus"
+        }
+    ]
+  ```
+</details>
 
 ### Build
 GoReleaser is used to produce binaries for multiple platforms (Windows, Mac, Linux).
