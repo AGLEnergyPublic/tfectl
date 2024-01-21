@@ -28,7 +28,7 @@ Flags:
   -h, --help                  help for tfectl
   -l, --log string            log level (debug, info, warn, error, fatal, panic)
   -o, --organization string   terraform organization or set TFE_ORG
-  -q, --query string          JMESPath compatible query to parse JSON output
+  -q, --query string          JQ compatible query to parse JSON output
   -t, --token string          terraform token or set TFE_TOKEN
   -v, --version               version for tfectl
 

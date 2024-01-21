@@ -13,10 +13,17 @@ import (
 )
 
 type PolicySet struct {
-	ID         string   `json:"id"`
-	Name       string   `json:"name"`
-	Kind       string   `json:"kind"`
-	Workspaces []string `json:"workspaces"`
+	ID                  string   `json:"id"`
+	Name                string   `json:"name"`
+	Kind                string   `json:"kind"`
+	Global              bool     `json:"global"`
+	Workspaces          []string `json:"workspaces"`
+	WorkspaceCount      int      `json:"workspace_count"`
+	WorkspaceExclusions []string `json:"workspace_exclusions"`
+	Projects            []string `json:"projects"`
+	ProjectCount        int      `json:"project_count"`
+	Policies            []string `json:"policies"`
+	PolicyCount         int      `json:"policy_count"`
 }
 
 var policySetCmd = &cobra.Command{
@@ -46,13 +53,46 @@ var policySetListCmd = &cobra.Command{
 		for _, policySet := range policySets {
 			var tmpPolicySet PolicySet
 			var tmpPolicySetWorkspaceList []string
+			var tmpPolicySetWorkspaceExclList []string
+			var tmpPolicySetProjectList []string
+			var tmpPolicySetPolicyList []string
+
 			log.Debugf("Processing policySet: %s - %s", policySet.Name, policySet.ID)
+
 			for _, workspace := range policySet.Workspaces {
 				log.Debugf("Processing workspaces in policySet: %s - %s - %s", policySet.Name, workspace.Name, workspace.ID)
 				tmpPolicySetWorkspaceList = append(tmpPolicySetWorkspaceList, workspace.ID)
 			}
-			entry := fmt.Sprintf(`{"name":"%s","id":"%s","kind":"%s","workspaces":"%v"}`, policySet.Name, policySet.ID, policySet.Kind, tmpPolicySetWorkspaceList)
-			err := json.Unmarshal([]byte(entry), &tmpPolicySet)
+
+			workspaceSlice, err := json.Marshal(tmpPolicySetWorkspaceList)
+			check(err)
+
+			for _, workspaceExcl := range policySet.WorkspaceExclusions {
+				log.Debugf("Processing workspaces in policySet: %s - %s - %s", policySet.Name, workspaceExcl.Name, workspaceExcl.ID)
+				tmpPolicySetWorkspaceExclList = append(tmpPolicySetWorkspaceExclList, workspaceExcl.ID)
+			}
+
+			workspaceExclSlice, err := json.Marshal(tmpPolicySetWorkspaceExclList)
+			check(err)
+
+			for _, project := range policySet.Projects {
+				log.Debugf("Processing projects in policySet: %s - %s - %s", policySet.Name, project.Name, project.ID)
+				tmpPolicySetProjectList = append(tmpPolicySetProjectList, project.ID)
+			}
+
+			projectSlice, err := json.Marshal(tmpPolicySetProjectList)
+			check(err)
+
+			for _, policy := range policySet.Policies {
+				log.Debugf("Processing policies in policySet: %s - %s - %s", policySet.Name, policy.Name, policy.ID)
+				tmpPolicySetPolicyList = append(tmpPolicySetPolicyList, policy.ID)
+			}
+
+			policiesSlice, err := json.Marshal(tmpPolicySetPolicyList)
+			check(err)
+
+			entry := fmt.Sprintf(`{"name":"%s","id":"%s","kind":"%s","global":%v,"workspaces":%v, "workspace_count":%d, "workspace_exclusion":%v, "projects":%v, "project_count":%d, "policies":%v, "policy_count":%d}`, policySet.Name, policySet.ID, policySet.Kind, policySet.Global, string(workspaceSlice), policySet.WorkspaceCount, string(workspaceExclSlice), string(projectSlice), policySet.ProjectCount, string(policiesSlice), policySet.PolicyCount)
+			err = json.Unmarshal([]byte(entry), &tmpPolicySet)
 			check(err)
 
 			policySetList = append(policySetList, tmpPolicySet)
@@ -95,7 +135,7 @@ func listPolicySets(client *tfe.Client, organization string, filter string) ([]*
 		}
 		results = append(results, ps.Items...)
 
-		if ps.Pagination.NextPage == 0 {
+		if ps.NextPage == 0 {
 			break
 		}
 
