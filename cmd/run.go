@@ -40,13 +40,15 @@ var runListCmd = &cobra.Command{
 		status, _ := cmd.Flags().GetString("status")
 		operation, _ := cmd.Flags().GetString("operation")
 		query, _ := cmd.Flags().GetString("query")
-		getLatest, _ := cmd.Flags().GetBool("latest")
+		listAll, _ := cmd.Flags().GetBool("list-all")
 
 		// Get workspaceName by ID
 		workspaceName, _ := getWorkspaceNameByID(client, organization, workspaceID)
 
 		// List runs in workspace
-		runs, _ := listRun(client, workspaceID, status, operation, getLatest)
+		var runs []*tfe.Run
+
+		runs, _ = listRuns(client, workspaceID, status, operation, listAll)
 
 		var runJson []byte
 		var runList []Run
@@ -378,7 +380,7 @@ func init() {
 	runListCmd.Flags().String("workspace-id", "", "WorkspaceID of the TFE workspace")
 	runListCmd.Flags().String("status", "", "Filter by run status")
 	runListCmd.Flags().String("operation", "", "Filter by run operation")
-	runListCmd.Flags().Bool("latest", false, "Returns latest run")
+	runListCmd.Flags().Bool("list-all", false, "List all relevant runs, not just the first page")
 
 	// Queue sub-command
 	runQueueCmd.Flags().String("filter", "", "Queue plans on workspaces matching filter")          // Mutually exclusive with `ids`
@@ -402,30 +404,37 @@ func init() {
 
 }
 
-func listRun(client *tfe.Client, workspaceID string, status string, operation string, latest bool) ([]*tfe.Run, error) {
+func listRuns(client *tfe.Client, workspaceID string, status string, operation string, listAll bool) ([]*tfe.Run, error) {
 	results := []*tfe.Run{}
-	// We only care about the first few runs at this point
 	currentPage := 1
 
-	log.Debugf("Processing page %d.\n", currentPage)
-	options := &tfe.RunListOptions{
-		ListOptions: tfe.ListOptions{
-			PageNumber: currentPage,
-			PageSize:   20,
-		},
-		Status:    status,
-		Operation: operation,
-	}
+	for {
+		log.Debugf("Processing page %d.\n", currentPage)
+		options := &tfe.RunListOptions{
+			ListOptions: tfe.ListOptions{
+				PageNumber: currentPage,
+				PageSize:   100,
+			},
+			Status:    status,
+			Operation: operation,
+		}
 
-	r, err := client.Runs.List(context.Background(), workspaceID, options)
-	if err != nil {
-		return nil, err
-	}
+		r, err := client.Runs.List(context.Background(), workspaceID, options)
+		if err != nil {
+			return nil, err
+		}
 
-	if latest {
-		results = append(results, r.Items[0])
-	} else {
 		results = append(results, r.Items...)
+
+		if listAll {
+			if r.NextPage == 0 {
+				break
+			}
+			currentPage++
+		} else {
+			break
+		}
+
 	}
 
 	return results, nil
