@@ -1,18 +1,34 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
 
 	"github.com/AGLEnergyPublic/tfectl/resources"
+	"github.com/hashicorp/go-tfe"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
+
+type PolicyCheckResult struct {
+	AdvisoryFailed int  `json:"advisory_failed"`
+	HardFailed     int  `json:"hard_failed"`
+	Passed         int  `json:"passed"`
+	Result         bool `json:"result"`
+	SoftFailed     int  `json:"soft_failed"`
+	TotalFailed    int  `json:"total_failed"`
+	Sentinel       any  `json:"sentinel"`
+}
+
+type PolicyCheck struct {
+	ID     string            `json:"id"`
+	Result PolicyCheckResult `json:"result"`
+	Status tfe.PolicyStatus  `json:"status"`
+	Scope  tfe.PolicyScope   `json:"scope"`
+}
 
 var policyCheckCmd = &cobra.Command{
 	Use:   "policy-check",
@@ -26,37 +42,21 @@ var policyCheckShowCmd = &cobra.Command{
 	Long:  `Show details of the policy check in a TFE run`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// policy check show function
-		_, _, err := resources.Setup(cmd)
+		_, client, err := resources.Setup(cmd)
 		check(err)
 
-		runIds, _ := cmd.Flags().GetString("run-ids")
+		runId, _ := cmd.Flags().GetString("run-id")
 		query, _ := cmd.Flags().GetString("query")
 
-		var policyCheck interface{}
-		var policyCheckShow []interface{}
-		var policyCheckShowJson []byte
+		var policyCheckJson []byte
 
-		// get policy check from runIDs
-		runIdShow := strings.Split(runIds, ",")
-		for _, id := range runIdShow {
-			var tmpPolicyObj []byte
-			e := fmt.Sprintf("runs/%s/policy-checks?include=run.workspace", id)
-			log.Debug(e)
-			httpReq, err := resources.HttpClientSetup(cmd, "GET", e, nil)
-			check(err)
-			tmpPolicyObj, err = showPolicyCheckHttpClient(httpReq)
-			check(err)
+		policyCheck, _ := showPolicyChecks(client, runId)
 
-			json.Unmarshal(tmpPolicyObj, &policyCheck)
-			policyCheckMap := policyCheck.(map[string]interface{})
-			policyCheckShow = append(policyCheckShow, policyCheckMap)
-		}
-
-		policyCheckShowJson, _ = json.MarshalIndent(policyCheckShow, "", "  ")
+		policyCheckJson, _ = json.MarshalIndent(policyCheck, "", "  ")
 		if query != "" {
-			resources.JqRun(policyCheckShowJson, query)
+			resources.JqRun(policyCheckJson, query)
 		} else {
-			fmt.Println(string(policyCheckShowJson))
+			fmt.Println(string(policyCheckJson))
 		}
 
 	},
@@ -68,16 +68,29 @@ func init() {
 	// Show sub-command
 	// Returns the detailed policy check results for a given list of RunIDs
 	policyCheckCmd.AddCommand(policyCheckShowCmd)
-	policyCheckShowCmd.Flags().String("run-ids", "", "Comma-separated list of runIds")
+	policyCheckShowCmd.Flags().String("run-id", "", "RunId to inspect")
 }
 
-func showPolicyCheckHttpClient(req *http.Request) ([]byte, error) {
-	resp, err := http.DefaultClient.Do(req)
+func showPolicyChecks(client *tfe.Client, runID string) (PolicyCheck, error) {
+	result := PolicyCheck{}
+	log.Debugf("Retrieving policy checks for run: %s\n", runID)
+	options := &tfe.PolicyCheckListOptions{}
+
+	pc, err := client.PolicyChecks.List(context.Background(), runID, options)
 	check(err)
 
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	check(err)
+	polchk := pc.Items[0]
 
-	return b, nil
+	result.ID = polchk.ID
+	result.Scope = polchk.Scope
+	result.Status = polchk.Status
+	result.Result.AdvisoryFailed = polchk.Result.AdvisoryFailed
+	result.Result.HardFailed = polchk.Result.HardFailed
+	result.Result.TotalFailed = polchk.Result.TotalFailed
+	result.Result.SoftFailed = polchk.Result.SoftFailed
+	result.Result.Passed = polchk.Result.Passed
+	result.Result.Sentinel = polchk.Result.Sentinel
+	result.Result.Result = polchk.Result.Result
+
+	return result, nil
 }
