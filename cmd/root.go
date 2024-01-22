@@ -13,9 +13,9 @@ var l string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:               "tfectl",
-	Short:             "Query TFE from the command line.",
-	Long:              `Query TFE from the command line.`,
-	Version:           "v1.3.0",
+	Short:             "Query TFE and TFC from the command line.",
+	Long:              `Query TFE and TFC from the command line.`,
+	Version:           "v1.4.0",
 	PersistentPreRunE: RunRootCmd,
 }
 
