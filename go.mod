@@ -3,7 +3,7 @@ module github.com/AGLEnergyPublic/tfectl
 go 1.19
 
 require (
-	github.com/hashicorp/go-tfe v1.42.0
+	github.com/hashicorp/go-tfe v1.43.0
 	github.com/itchyny/gojq v0.12.14
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
@@ -22,7 +22,7 @@ require (
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/sync v0.5.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
