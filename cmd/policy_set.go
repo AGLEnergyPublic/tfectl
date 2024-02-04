@@ -112,7 +112,7 @@ func init() {
 	policySetCmd.AddCommand(policySetListCmd)
 
 	// List sub-command
-	policySetListCmd.Flags().String("fitler", "", "Search for policy sets by name")
+	policySetListCmd.Flags().String("filter", "", "Search for policy sets by name")
 }
 
 func listPolicySets(client *tfe.Client, organization string, filter string) ([]*tfe.PolicySet, error) {
