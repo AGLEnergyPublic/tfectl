@@ -202,7 +202,6 @@ func getPrivateProviderDetails(client *tfe.Client, organization string, name str
 	result.Name = pr.Name
 	result.Namespace = pr.Namespace
 	result.RegistryName = pr.RegistryName
-	//result.ID = pr.ID
 	result.ProviderLatestVersion = latestVersion
 
 	for _, platform := range prpv.Items {
