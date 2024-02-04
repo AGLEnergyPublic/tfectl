@@ -589,6 +589,12 @@ func unmarshalAttribute(
 	value = reflect.ValueOf(attribute)
 	fieldType := structField.Type
 
+	// Handle NullableAttr[T]
+	if strings.HasPrefix(fieldValue.Type().Name(), "NullableAttr[") {
+		value, err = handleNullable(attribute, args, structField, fieldValue)
+		return
+	}
+
 	// Handle field of type []string
 	if fieldValue.Type() == reflect.TypeOf([]string{}) {
 		value, err = handleStringSlice(attribute)
@@ -654,6 +660,30 @@ func handleStringSlice(attribute interface{}) (reflect.Value, error) {
 	}
 
 	return reflect.ValueOf(values), nil
+}
+
+func handleNullable(
+	attribute interface{},
+	args []string,
+	structField reflect.StructField,
+	fieldValue reflect.Value) (reflect.Value, error) {
+
+	if a, ok := attribute.(string); ok && a == "null" {
+		return reflect.ValueOf(nil), nil
+	}
+
+	innerType := fieldValue.Type().Elem()
+	zeroValue := reflect.Zero(innerType)
+
+	attrVal, err := unmarshalAttribute(attribute, args, structField, zeroValue)
+	if err != nil {
+		return reflect.ValueOf(nil), err
+	}
+
+	fieldValue.Set(reflect.MakeMapWithSize(fieldValue.Type(), 1))
+	fieldValue.SetMapIndex(reflect.ValueOf(true), attrVal)
+
+	return fieldValue, nil
 }
 
 func handleTime(attribute interface{}, args []string, fieldValue reflect.Value) (reflect.Value, error) {
