@@ -655,7 +655,7 @@ Use "tfectl [command] --help" for more information about a command.
     }
   ```
 
-  * To query only those checks which have failedd
+  * To query only those checks which have failed
   ```bash
     $ tfectl policy-check show --run-id run-Wxk42edRCCLB5fMi --query '.result.sentinel.data | to_entries | .[].value.policies | .[] | select(.result|not) | .policy'
     [
