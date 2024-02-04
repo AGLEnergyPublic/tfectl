@@ -28,10 +28,6 @@ type ProviderPlatform struct {
 
 type PrivateProviderDetail struct {
 	RegistryProvider
-	//ID                    string             `json:"id"`
-	//Name                  string             `json:"name"`
-	//Namespace             string             `json:"namespace"`
-	//RegistryName          tfe.RegistryName   `json:"registry_name"`
 	ProviderLatestVersion string             `json:"provider_latest_version"`
 	ProviderPlatforms     []ProviderPlatform `json:"provider_platforms"`
 }
