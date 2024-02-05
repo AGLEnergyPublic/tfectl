@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export GO_VERSION=${1:-"1.18.5"}
+export GO_VERSION=${1:-"1.20.11"}
 export ARCH=${2:-"amd64"}
 
 # Download version

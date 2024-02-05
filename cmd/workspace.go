@@ -18,16 +18,11 @@ import (
 
 // WorkspaceDetail for -detail flag with list
 type WorkspaceDetail struct {
-	Name                   string   `json:"name"`
-	ID                     string   `json:"id"`
-	Locked                 bool     `json:"locked"`
-	ExecutionMode          string   `json:"execution_mode"`
-	TerraformVersion       string   `json:"terraform_version"`
-	Tags                   []string `json:"tags"`
-	CreatedDaysAgo         string   `json:"created_days_ago"`
-	UpdatedDaysAgo         string   `json:"updated_days_ago"`
-	LastRemoteRunDaysAgo   string   `json:"last_remote_run_days_ago"`
-	LastStateUpdateDaysAgo string   `json:"last_state_update_days_ago"`
+	Workspace
+	CreatedDaysAgo         string `json:"created_days_ago"`
+	UpdatedDaysAgo         string `json:"updated_days_ago"`
+	LastRemoteRunDaysAgo   string `json:"last_remote_run_days_ago"`
+	LastStateUpdateDaysAgo string `json:"last_state_update_days_ago"`
 }
 
 type Workspace struct {

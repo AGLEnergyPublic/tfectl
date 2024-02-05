@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Use:               "tfectl",
 	Short:             "Query TFE and TFC from the command line.",
 	Long:              `Query TFE and TFC from the command line.`,
-	Version:           "v1.4.0",
+	Version:           "v1.5.0",
 	PersistentPreRunE: RunRootCmd,
 }
 

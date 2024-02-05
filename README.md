@@ -654,7 +654,8 @@ Use "tfectl [command] --help" for more information about a command.
         }
     }
   ```
-  * To query only those checks which have failedd
+
+  * To query only those checks which have failed
   ```bash
     $ tfectl policy-check show --run-id run-Wxk42edRCCLB5fMi --query '.result.sentinel.data | to_entries | .[].value.policies | .[] | select(.result|not) | .policy'
     [
@@ -669,6 +670,88 @@ Use "tfectl [command] --help" for more information about a command.
     ]
   ```
 </details>
+
+### Registry Modules
+<details>
+    <summary>Private Registry Module Operations</summary>
+
+* Query Private Modules in the Organization registry
+
+* #### 1. List
+  * List all available Modules in the Organization registry
+  ```bash
+    $ tfectl registry-module list --query '.[] | select(.provider == "azurerm")'
+    [
+        {
+            "id": "mod-DHAq8Casdas32uC",
+            "module_latest_version": "2.0.4",
+            "name": "windows-instance",
+            "namespace": "MyNamespace",
+            "provider": "azurerm",
+            "publishing_mechanism": "git_tag",
+            "registry_name": "private",
+            "status": "setup_complete",
+            "test_config": true,
+            "vcs_repo": "MyGHOrg/terraform-azurerm-windows-instance"
+        }
+    ]
+  ```
+</details>
+
+### Registry Providers
+<details>
+    <summary>Private Provider Registry Operations</summary>
+
+* Query Private Providers in Organization Registry
+
+* #### 1. List
+  * List all available Private Providers in the Organization Registry
+  ```bash
+    $ tfectl registry-provider list
+    [
+        {
+            "id": "prov-5fws9JKkNQZDz2Gf",
+            "name": "aws",
+            "namespace": "MyTFCOrg",
+            "registry_name": "private"
+        },
+        {
+            "id": "prov-bGhLiwy6APQ9r4dZ",
+            "name": "azure",
+            "namespace": "MyTFCOrg",
+            "registry_name": "private"
+        }
+    ]
+  ```
+
+* #### 2. Get
+  * Get details of given Private provider
+  ```bash
+    $ tfectl registry-provider get --name aws
+    {
+        "id": "prov-5fws9JKkNQZDz2Gf",
+        "name": "aws",
+        "namespace": "MyTFCOrg",
+        "registry_name": "private",
+        "provider_latest_version": "5.32.2",
+        "provider_platforms": [
+            {
+                "id": "provpltfrm-wCCMzzy91Rfdj6PW",
+                "os": "linux",
+                "arch": "amd64",
+                "filename": "terraform-provider-awx_5.32.2_linux_amd64.zip"
+            },
+            {
+                "id": "provpltfrm-c9jhJ2tmwEbbwuTV",
+                "os": "windows",
+                "arch": "amd64",
+                "filename": "terraform-provider-awx_5.32.2_windows_amd64.zip"
+            }
+        ]
+    }
+  ```
+</details>
+    
 
 ### Build
 GoReleaser is used to produce binaries for multiple platforms (Windows, Mac, Linux).
