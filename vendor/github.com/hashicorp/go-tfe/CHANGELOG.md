@@ -1,5 +1,18 @@
 # Unreleased
 
+# v1.47.0
+
+## Enhancements
+* Adds BETA `description` attribute to `Project` by @netramali [#861](https://github.com/hashicorp/go-tfe/pull/861)
+* Adds `Read` method to `TestVariables` by @aaabdelgany [#851](https://github.com/hashicorp/go-tfe/pull/851)
+
+# v1.46.0
+
+## Enhancements
+* Adds `Query` field to `Project` and `Team` list options, to allow projects and teams to be searched by name by @JarrettSpiker [#849](https://github.com/hashicorp/go-tfe/pull/849)
+* Adds `AgenPool` relation to `OAuthClient` create options to support for Private VCS by enabling creation of OAuth Client when AgentPoolID is set (as an optional param) @roleesinhaHC [#841](https://github.com/hashicorp/go-tfe/pull/841)
+* Add `Sort` field to workspace list options @Maed223 [#859](https://github.com/hashicorp/go-tfe/pull/859)
+
 # v1.45.0
 
 ## Enhancements
