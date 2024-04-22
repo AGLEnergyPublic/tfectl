@@ -56,6 +56,7 @@ type ServiceProviderType string
 const (
 	ServiceProviderAzureDevOpsServer   ServiceProviderType = "ado_server"
 	ServiceProviderAzureDevOpsServices ServiceProviderType = "ado_services"
+	ServiceProviderBitbucketDataCenter ServiceProviderType = "bitbucket_data_center"
 	ServiceProviderBitbucket           ServiceProviderType = "bitbucket_hosted"
 	// Bitbucket Server v5.4.0 and above
 	ServiceProviderBitbucketServer ServiceProviderType = "bitbucket_server"
@@ -90,7 +91,7 @@ type OAuthClient struct {
 	ServiceProvider     ServiceProviderType `jsonapi:"attr,service-provider"`
 	ServiceProviderName string              `jsonapi:"attr,service-provider-display-name"`
 	// **Note: This field is still in BETA and subject to change.**
-	OrganizationScoped bool `jsonapi:"attr,organization-scoped"`
+	OrganizationScoped *bool `jsonapi:"attr,organization-scoped"`
 
 	// Relations
 	Organization *Organization `jsonapi:"relation,organization"`
@@ -160,8 +161,8 @@ type OAuthClientCreateOptions struct {
 	// Optional: Secret key associated with this vcs provider - only available for ado_server
 	Secret *string `jsonapi:"attr,secret,omitempty"`
 
-	// Optional: RSAPublicKey the text of the SSH public key associated with your BitBucket
-	// Server Application Link.
+	// Optional: RSAPublicKey the text of the SSH public key associated with your
+	// BitBucket Data Center Application Link.
 	RSAPublicKey *string `jsonapi:"attr,rsa-public-key,omitempty"`
 
 	// Required: The VCS provider being connected with.
@@ -342,7 +343,9 @@ func (o OAuthClientCreateOptions) valid() error {
 	if o.ServiceProvider == nil {
 		return ErrRequiredServiceProvider
 	}
-	if !validString(o.OAuthToken) && *o.ServiceProvider != *ServiceProvider(ServiceProviderBitbucketServer) {
+	if !validString(o.OAuthToken) &&
+		*o.ServiceProvider != *ServiceProvider(ServiceProviderBitbucketServer) &&
+		*o.ServiceProvider != *ServiceProvider(ServiceProviderBitbucketDataCenter) {
 		return ErrRequiredOauthToken
 	}
 	if validString(o.PrivateKey) && *o.ServiceProvider != *ServiceProvider(ServiceProviderAzureDevOpsServer) {

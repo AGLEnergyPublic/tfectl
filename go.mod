@@ -3,7 +3,7 @@ module github.com/AGLEnergyPublic/tfectl
 go 1.20
 
 require (
-	github.com/hashicorp/go-tfe v1.49.0
+	github.com/hashicorp/go-tfe v1.50.0
 	github.com/itchyny/gojq v0.12.15
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
