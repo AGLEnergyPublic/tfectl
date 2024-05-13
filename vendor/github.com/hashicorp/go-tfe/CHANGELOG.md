@@ -1,5 +1,19 @@
 # Unreleased
 
+# v1.53.0
+
+## Enhancements
+* Adds `ManageTeams`, `ManageOrganizationAccess`, and `AccessSecretTeams` permissions to team `OrganizationAccess` by @juliannatetreault [#874](https://github.com/hashicorp/go-tfe/pull/874)
+* Mocks are now generated using the go.uber.org/mock package [#897](https://github.com/hashicorp/go-tfe/pull/897)
+
+# v1.52.0
+
+## Enhancements
+* Add `EnforcementLevel` to `Policy` create and update options. This will replace the deprecated `[]Enforce` method for specifying enforcement level. @JarrettSpiker [#895](https://github.com/hashicorp/go-tfe/pull/895)
+
+## Deprecations
+* The `Enforce` fields on `Policy`, `PolicyCreateOptions`, and `PolicyUpdateOptions` have been deprecated. Use the `EnforcementLevel` instead. @JarrettSpiker [#895](https://github.com/hashicorp/go-tfe/pull/895)
+
 # v1.51.0
 
 ## Enhancements
