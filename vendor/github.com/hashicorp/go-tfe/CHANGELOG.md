@@ -1,5 +1,17 @@
 # UNRELEASED
 
+# v1.59.0
+
+## Features
+
+* Adds support for the Run Tasks Integration API by @karvounis-form3 [#929](https://github.com/hashicorp/go-tfe/pull/929)
+
+# v1.58.0
+
+## Enhancements
+
+* Adds BETA support for `Stacks` resources, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @brandonc. [#920](https://github.com/hashicorp/go-tfe/pull/920)
+
 # v1.57.0
 
 ## Enhancements

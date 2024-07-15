@@ -158,8 +158,10 @@ type Client struct {
 	Runs                       Runs
 	RunEvents                  RunEvents
 	RunTasks                   RunTasks
+	RunTasksIntegration        RunTasksIntegration
 	RunTriggers                RunTriggers
 	SSHKeys                    SSHKeys
+	Stacks                     Stacks
 	StateVersionOutputs        StateVersionOutputs
 	StateVersions              StateVersions
 	TaskResults                TaskResults
@@ -458,8 +460,10 @@ func NewClient(cfg *Config) (*Client, error) {
 	client.Runs = &runs{client: client}
 	client.RunEvents = &runEvents{client: client}
 	client.RunTasks = &runTasks{client: client}
+	client.RunTasksIntegration = &runTaskIntegration{client: client}
 	client.RunTriggers = &runTriggers{client: client}
 	client.SSHKeys = &sshKeys{client: client}
+	client.Stacks = &stacks{client: client}
 	client.StateVersionOutputs = &stateVersionOutputs{client: client}
 	client.StateVersions = &stateVersions{client: client}
 	client.TaskResults = &taskResults{client: client}
@@ -605,7 +609,7 @@ func (c *Client) retryHTTPBackoff(min, max time.Duration, attemptNum int, resp *
 //
 // min and max are mainly used for bounding the jitter that will be added to
 // the reset time retrieved from the headers. But if the final wait time is
-// less then min, min will be used instead.
+// less than min, min will be used instead.
 func rateLimitBackoff(min, max time.Duration, resp *http.Response) time.Duration {
 	// rnd is used to generate pseudo-random numbers.
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
