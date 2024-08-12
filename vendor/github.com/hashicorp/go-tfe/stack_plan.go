@@ -1,7 +1,11 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package tfe
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"time"
@@ -25,6 +29,9 @@ type StackPlans interface {
 
 	// Discard discards a stack plan.
 	Discard(ctx context.Context, stackPlanID string) error
+
+	// PlanDescription returns the plan description for a stack plan.
+	PlanDescription(ctx context.Context, stackPlanID string) (*JSONChangeDesc, error)
 }
 
 type StackPlansStatusFilter string
@@ -39,6 +46,12 @@ const (
 	StackPlansStatusFilterCanceled  StackPlansStatusFilter = "canceled"
 )
 
+type StackPlansIncludeOpt string
+
+const (
+	StackPlansIncludeOperations StackPlansIncludeOpt = "stack_plan_operations"
+)
+
 type StackPlansListOptions struct {
 	ListOptions
 
@@ -47,6 +60,8 @@ type StackPlansListOptions struct {
 
 	// Optional: A query string to filter plans by deployment.
 	Deployment string `url:"filter[deployment],omitempty"`
+
+	Include []StackPlansIncludeOpt `url:"include,omitempty"`
 }
 
 type StackPlanList struct {
@@ -61,6 +76,7 @@ type stackPlans struct {
 
 var _ StackPlans = &stackPlans{}
 
+// StackPlanStatusTimestamps are the timestamps of the status changes for a stack
 type StackPlanStatusTimestamps struct {
 	CreatedAt  time.Time `jsonapi:"attr,created-at,rfc3339"`
 	RunningAt  time.Time `jsonapi:"attr,running-at,rfc3339"`
@@ -68,6 +84,7 @@ type StackPlanStatusTimestamps struct {
 	FinishedAt time.Time `jsonapi:"attr,finished-at,rfc3339"`
 }
 
+// PlanChanges is the summary of the planned changes
 type PlanChanges struct {
 	Add    int `jsonapi:"attr,add"`
 	Total  int `jsonapi:"attr,total"`
@@ -88,8 +105,89 @@ type StackPlan struct {
 	Deployment       string                     `jsonapi:"attr,deployment"`
 
 	// Relationships
-	StackConfiguration *StackConfiguration `jsonapi:"relation,stack-configuration"`
-	Stack              *Stack              `jsonapi:"relation,stack"`
+	StackConfiguration  *StackConfiguration   `jsonapi:"relation,stack-configuration"`
+	Stack               *Stack                `jsonapi:"relation,stack"`
+	StackPlanOperations []*StackPlanOperation `jsonapi:"relation,stack-plan-operations"`
+}
+
+// JSONChangeDesc represents a change description of a stack plan / apply operation.
+type JSONChangeDesc struct {
+	FormatVersion             uint64                         `json:"terraform_stack_change_description"`
+	Interim                   bool                           `json:"interim,omitempty"`
+	Applyable                 bool                           `json:"applyable"`
+	PlanMode                  string                         `json:"plan_mode"`
+	Components                []JSONComponent                `json:"components"`
+	ResourceInstances         []JSONResourceInstance         `json:"resource_instances"`
+	DeferredResourceInstances []JSONResourceInstanceDeferral `json:"deferred_resource_instances"`
+	Outputs                   map[string]JSONOutput          `json:"outputs"`
+}
+
+// JSONComponent represents a change description of a single component in a plan.
+type JSONComponent struct {
+	Address             string         `json:"address"`
+	ComponentAddress    string         `json:"component_address"`
+	InstanceCorrelator  string         `json:"instance_correlator"`
+	ComponentCorrelator string         `json:"component_correlator"`
+	Actions             []ChangeAction `json:"actions"`
+	Complete            bool           `json:"complete"`
+}
+
+// ChangeAction are the actions a change can have: no-op, create, read, update, delte, forget.
+type ChangeAction string
+
+// JSONResourceInstance is the change description of a single resource instance in a plan.
+type JSONResourceInstance struct {
+	ComponentInstanceCorrelator      string          `json:"component_instance_correlator"`
+	ComponentInstanceAddress         string          `json:"component_instance_address"`
+	Address                          string          `json:"address"`
+	PreviousComponentInstanceAddress string          `json:"previous_component_instance_address,omitempty"`
+	PreviousAddress                  string          `json:"previous_address,omitempty"`
+	DeposedKey                       string          `json:"deposed,omitempty"`
+	ResourceMode                     string          `json:"mode,omitempty"`
+	ResourceType                     string          `json:"type"`
+	ProviderAddr                     string          `json:"provider_name"`
+	Change                           Change          `json:"change"`
+	ResourceName                     string          `json:"resource_name"`
+	Index                            json.RawMessage `json:"index"`
+	IndexUnknown                     bool            `json:"index_unknown"`
+	ModuleAddr                       string          `json:"module_address"`
+	ActionReason                     string          `json:"action_reason,omitempty"`
+}
+
+// JSONResourceInstanceDeferral is the change description of a single resource instance that is deferred.
+type JSONResourceInstanceDeferral struct {
+	ResourceInstance JSONResourceInstance `json:"resource_instance"`
+	Deferred         JSONDeferred         `json:"deferred"`
+}
+
+// JSONDeferred contains the reason why a resource instance is deferred: instance_count_unknown, resource_config_unknown, provider_config_unknown, provider_config_unknown, or deferred_prereq.
+type JSONDeferred struct {
+	Reason string `json:"reason"`
+}
+
+// JSONOutput is the value of a single output in a plan.
+type JSONOutput struct {
+	Change json.RawMessage `json:"change"`
+}
+
+// Change represents the change of a resource instance in a plan.
+type Change struct {
+	Actions         []ChangeAction  `json:"actions"`
+	After           json.RawMessage `json:"after"`
+	Before          json.RawMessage `json:"before"`
+	AfterUnknown    json.RawMessage `json:"after_unknown"`
+	BeforeSensitive json.RawMessage `json:"before_sensitive"`
+	AfterSensitive  json.RawMessage `json:"after_sensitive"`
+	Importing       *JSONImporting  `json:"importing,omitempty"`
+	ReplacePaths    json.RawMessage `json:"replace_paths,omitempty"`
+}
+
+// JSONImporting represents the import status of a resource instance in a plan.
+type JSONImporting struct {
+	// True within a deferred instance
+	Unknown         bool   `json:"unknown"`
+	ID              string `json:"id"`
+	GeneratedConfig string `json:"generated_config"`
 }
 
 func (s stackPlans) Read(ctx context.Context, stackPlanID string) (*StackPlan, error) {
@@ -147,4 +245,19 @@ func (s stackPlans) Cancel(ctx context.Context, stackPlanID string) error {
 	}
 
 	return req.Do(ctx, nil)
+}
+
+func (s stackPlans) PlanDescription(ctx context.Context, stackPlanID string) (*JSONChangeDesc, error) {
+	req, err := s.client.NewRequest("GET", fmt.Sprintf("stack-plans/%s/plan-description", url.PathEscape(stackPlanID)), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	jd := &JSONChangeDesc{}
+	err = req.DoJSON(ctx, jd)
+	if err != nil {
+		return nil, err
+	}
+
+	return jd, nil
 }

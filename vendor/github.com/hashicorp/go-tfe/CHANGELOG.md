@@ -1,4 +1,19 @@
-# UNRELEASED
+# v1.62.0
+
+## Bug Fixes
+
+* Fixed `RegistryNoCodeModules` methods `CreateWorkspace` and `UpdateWorkspace` to return a `Workspace` type. This resulted in a BREAKING CHANGE, yet the previous type was not properly decoded nor reflective of the actual API result by @paladin-devops [#954](https://github.com/hashicorp/go-tfe/pull/954)
+
+## Enhancements
+
+* Adds `AllowMemberTokenManagement` permission to `Team` by @juliannatetreault [#922](https://github.com/hashicorp/go-tfe/pull/922)
+
+# v1.61.0
+
+## Enhancements
+
+* Adds support for creating no-code workspaces by @paladin-devops [#927](https://github.com/hashicorp/go-tfe/pull/927)
+* Adds support for upgrading no-code workspaces by @paladin-devops [#935](https://github.com/hashicorp/go-tfe/pull/935)
 
 # v1.60.0
 
