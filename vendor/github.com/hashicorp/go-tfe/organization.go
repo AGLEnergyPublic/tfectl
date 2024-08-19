@@ -244,6 +244,10 @@ type OrganizationCreateOptions struct {
 
 	// Optional: DefaultExecutionMode the default execution mode for workspaces
 	DefaultExecutionMode *string `jsonapi:"attr,default-execution-mode,omitempty"`
+
+	// Optional: StacksEnabled toggles whether stacks are enabled for the organization. This setting
+	// is considered BETA, SUBJECT TO CHANGE, and likely unavailable to most users.
+	StacksEnabled *bool `jsonapi:"attr,stacks-enabled,omitempty"`
 }
 
 // OrganizationUpdateOptions represents the options for updating an organization.
@@ -346,7 +350,7 @@ func (s *organizations) ReadWithOptions(ctx context.Context, organization string
 		return nil, ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s", url.PathEscape(organization))
 	req, err := s.client.NewRequest("GET", u, &options)
 	if err != nil {
 		return nil, err
@@ -370,7 +374,7 @@ func (s *organizations) Update(ctx context.Context, organization string, options
 		return nil, ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s", url.PathEscape(organization))
 	req, err := s.client.NewRequest("PATCH", u, &options)
 	if err != nil {
 		return nil, err
@@ -391,7 +395,7 @@ func (s *organizations) Delete(ctx context.Context, organization string) error {
 		return ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s", url.PathEscape(organization))
 	req, err := s.client.NewRequest("DELETE", u, nil)
 	if err != nil {
 		return err
@@ -406,7 +410,7 @@ func (s *organizations) ReadCapacity(ctx context.Context, organization string) (
 		return nil, ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s/capacity", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s/capacity", url.PathEscape(organization))
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
@@ -427,7 +431,7 @@ func (s *organizations) ReadEntitlements(ctx context.Context, organization strin
 		return nil, ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s/entitlement-set", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s/entitlement-set", url.PathEscape(organization))
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
@@ -448,7 +452,7 @@ func (s *organizations) ReadRunQueue(ctx context.Context, organization string, o
 		return nil, ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s/runs/queue", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s/runs/queue", url.PathEscape(organization))
 	req, err := s.client.NewRequest("GET", u, &options)
 	if err != nil {
 		return nil, err
@@ -468,7 +472,7 @@ func (s *organizations) ReadDataRetentionPolicy(ctx context.Context, organizatio
 		return nil, ErrInvalidOrg
 	}
 
-	u := fmt.Sprintf("organizations/%s/relationships/data-retention-policy", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s/relationships/data-retention-policy", url.PathEscape(organization))
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
@@ -636,5 +640,5 @@ func (o OrganizationCreateOptions) valid() error {
 }
 
 func (s *organizations) dataRetentionPolicyLink(name string) string {
-	return fmt.Sprintf("organizations/%s/relationships/data-retention-policy", url.QueryEscape(name))
+	return fmt.Sprintf("organizations/%s/relationships/data-retention-policy", url.PathEscape(name))
 }
