@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/AGLEnergyPublic/tfectl/resources"
 	"github.com/hashicorp/go-tfe"
@@ -54,9 +53,11 @@ var policyCheckShowCmd = &cobra.Command{
 
 		policyCheckJson, _ = json.MarshalIndent(policyCheck, "", "  ")
 		if query != "" {
-			resources.JqRun(policyCheckJson, query)
+			outputJsonStr, err := resources.JqRun(policyCheckJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(policyCheckJson))
+			cmd.Println(string(policyCheckJson))
 		}
 
 	},

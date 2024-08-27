@@ -60,9 +60,11 @@ var adminRunListCmd = &cobra.Command{
 
 		adminRunListJson, _ = json.MarshalIndent(adminRunList, "", "  ")
 		if query != "" {
-			resources.JqRun(adminRunListJson, query)
+			outputJsonStr, err := resources.JqRun(adminRunListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(adminRunListJson))
+			cmd.Println(string(adminRunListJson))
 		}
 	},
 }
@@ -103,9 +105,11 @@ var adminRunForceCancelCmd = &cobra.Command{
 		}
 		adminRunForceCancelListJson, _ = json.MarshalIndent(adminRunForceCancelList, "", "  ")
 		if query != "" {
-			resources.JqRun(adminRunForceCancelListJson, query)
+			outputJsonStr, err := resources.JqRun(adminRunForceCancelListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(adminRunForceCancelListJson))
+			cmd.Println(string(adminRunForceCancelListJson))
 		}
 	},
 }

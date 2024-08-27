@@ -100,9 +100,11 @@ var policySetListCmd = &cobra.Command{
 		policySetListJson, _ = json.MarshalIndent(policySetList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(policySetListJson, query)
+			outputJsonStr, err := resources.JqRun(policySetListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(policySetListJson))
+			cmd.Println(string(policySetListJson))
 		}
 	},
 }

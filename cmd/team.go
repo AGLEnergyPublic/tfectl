@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/AGLEnergyPublic/tfectl/resources"
@@ -68,9 +67,11 @@ var teamListCmd = &cobra.Command{
 		teamJson, _ = json.MarshalIndent(teamList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(teamJson, query)
+			outputJsonStr, err := resources.JqRun(teamJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(teamJson))
+			cmd.Println(string(teamJson))
 		}
 
 	},
@@ -131,9 +132,11 @@ var teamGetCmd = &cobra.Command{
 		teamJson, _ = json.MarshalIndent(teamList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(teamJson, query)
+			outputJsonStr, err := resources.JqRun(teamJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(teamJson))
+			cmd.Println(string(teamJson))
 		}
 
 	},
