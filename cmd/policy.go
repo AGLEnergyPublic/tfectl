@@ -46,7 +46,18 @@ var policyListCmd = &cobra.Command{
 		for _, policy := range policies {
 			var tmpPolicy Policy
 			log.Debugf("Processing policy: %s - %s", policy.Name, policy.ID)
-			entry := fmt.Sprintf(`{"name":"%s","id":"%s","kind":"%s","enforce":"%s","policy_set_count":%d}`, policy.Name, policy.ID, policy.Kind, policy.Enforce[0].Mode, policy.PolicySetCount)
+			entry := fmt.Sprintf(`{
+        "name":"%s",
+        "id":"%s",
+        "kind":"%s",
+        "enforce":"%s",
+        "policy_set_count":%d
+      }`,
+				policy.Name,
+				policy.ID,
+				policy.Kind,
+				policy.Enforce[0].Mode,
+				policy.PolicySetCount)
 			err := json.Unmarshal([]byte(entry), &tmpPolicy)
 			check(err)
 

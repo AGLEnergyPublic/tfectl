@@ -108,7 +108,18 @@ var workspaceListCmd = &cobra.Command{
 				var tmpWorkspace Workspace
 
 				log.Debugf("Processing workspace: %s - %s", workspace.Name, workspace.ID)
-				entry := fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v,"execution_mode":"%s","terraform_version":"%s"}`, workspace.Name, workspace.ID, workspace.Locked, workspace.ExecutionMode, workspace.TerraformVersion)
+				entry := fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v,
+          "execution_mode":"%s",
+          "terraform_version":"%s"
+        }`,
+					workspace.Name,
+					workspace.ID,
+					workspace.Locked,
+					workspace.ExecutionMode,
+					workspace.TerraformVersion)
 				err := json.Unmarshal([]byte(entry), &tmpWorkspace)
 				check(err)
 
@@ -269,9 +280,22 @@ var workspaceLockCmd = &cobra.Command{
 
 			workspace, err := lockWorkspace(client, organization, wrk.WorkspaceID, &reason)
 			if err != nil {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":true}`, wrk.WorkspaceName, wrk.WorkspaceID)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":true
+        }`,
+					wrk.WorkspaceName,
+					wrk.WorkspaceID)
 			} else {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v}`, workspace.Name, workspace.ID, workspace.Locked)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v
+        }`,
+					workspace.Name,
+					workspace.ID,
+					workspace.Locked)
 			}
 			_ = json.Unmarshal([]byte(entry), &lockedWorkspace)
 			lockedWorkspaceList = append(lockedWorkspaceList, lockedWorkspace)
@@ -373,9 +397,22 @@ var workspaceUnlockCmd = &cobra.Command{
 
 			workspace, err := unlockWorkspace(client, organization, wrk.WorkspaceID)
 			if err != nil {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":false}`, workspace.Name, workspace.ID)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":false
+        }`,
+					workspace.Name,
+					workspace.ID)
 			} else {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v}`, workspace.Name, workspace.ID, workspace.Locked)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v
+        }`,
+					workspace.Name,
+					workspace.ID,
+					workspace.Locked)
 			}
 
 			_ = json.Unmarshal([]byte(entry), &unlockedWorkspace)

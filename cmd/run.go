@@ -72,7 +72,18 @@ var runListCmd = &cobra.Command{
 				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PolicyCheckedAt.Sub(run.CreatedAt).Seconds())
 			}
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"%s"}`, run.ID, workspaceID, workspaceName, run.Status, runDuration)
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"%s"
+      }`,
+				run.ID,
+				workspaceID,
+				workspaceName,
+				run.Status,
+				runDuration)
 
 			err := json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -139,7 +150,17 @@ var runQueueCmd = &cobra.Command{
 			run, err := queueRun(client, organization, workspace)
 			check(err)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"NA"}`, run.ID, run.Workspace.ID, workspace.Name, run.Status)
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				run.ID,
+				run.Workspace.ID,
+				workspace.Name,
+				run.Status)
 
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -187,7 +208,17 @@ var runApplyCmd = &cobra.Command{
 			log.Debugf("Applying run with id: %s", id)
 			applyRun(client, id)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"NA"}`, id, workspaceID, workspaceName, "applying")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"applying")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 			runApplyList = append(runApplyList, tmpRun)
@@ -319,7 +350,17 @@ var runCancelCmd = &cobra.Command{
 				cancelRun(client, id)
 			}
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"NA"}`, id, workspaceID, workspaceName, "cancelling")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"cancelling")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -390,7 +431,17 @@ var runDiscardCmd = &cobra.Command{
 			log.Debugf("Discarding run with id: %s", id)
 			discardRun(client, id)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"NA"}`, id, workspaceID, workspaceName, "discarding")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"discarding")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 

@@ -50,7 +50,16 @@ var adminRunListCmd = &cobra.Command{
 			log.Debugf("Processing run %s", run.ID)
 
 			workspaceName, _ := getWorkspaceNameByID(client, organization, run.Workspace.ID)
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, run.ID, run.Workspace.ID, workspaceName, run.Status)
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s"
+      }`,
+				run.ID,
+				run.Workspace.ID,
+				workspaceName,
+				run.Status)
 
 			err = json.Unmarshal([]byte(entry), &tmpAdminRun)
 			check(err)
@@ -97,7 +106,16 @@ var adminRunForceCancelCmd = &cobra.Command{
 
 			adminForceCancelRun(client, id)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, id, workspaceID, workspaceName, "cancelling")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"cancelling")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
