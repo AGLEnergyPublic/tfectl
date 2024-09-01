@@ -23,7 +23,7 @@ type WorkspaceDetail struct {
 	UpdatedDaysAgo         string `json:"updated_days_ago"`
 	LastRemoteRunDaysAgo   string `json:"last_remote_run_days_ago"`
 	LastStateUpdateDaysAgo string `json:"last_state_update_days_ago"`
-	AverageRunTime         string `json:"average_run_time"`
+	AverageRunDuration     string `json:"average_run_duration"`
 }
 
 type Workspace struct {
@@ -496,7 +496,7 @@ func getWorkspace(client *tfe.Client, organization string, workspaceID string) (
 	result.UpdatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.UpdatedAt).Hours()/24)
 	result.LastRemoteRunDaysAgo = workspaceDetails.LastRemoteRunDaysAgo
 	result.LastStateUpdateDaysAgo = workspaceDetails.LastStateUpdateDaysAgo
-	result.AverageRunTime = workspaceDetails.AverageRunTime
+	result.AverageRunDuration = workspaceDetails.AverageRunDuration
 
 	return result, nil
 }
@@ -527,9 +527,9 @@ func getWorkspaceDetails(client *tfe.Client, organization string, workspaceID st
 
 		}
 
-		result.AverageRunTime = fmt.Sprintf("%f", cumulativeRunDuration/float64(numberOfRuns))
+		result.AverageRunDuration = fmt.Sprintf("%f", cumulativeRunDuration/float64(numberOfRuns))
 	} else {
-		result.AverageRunTime = ""
+		result.AverageRunDuration = "NA"
 	}
 
 	// Determine when current state-version was created

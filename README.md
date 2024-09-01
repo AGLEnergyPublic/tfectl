@@ -160,7 +160,7 @@ Use "tfectl [command] --help" for more information about a command.
     | updated_days_ago           | How many days ago this workspace was updated                        | string   |
     | last_remote_run_days_ago   | How many days ago was a remote run performed in this workspace      | string   |
     | last_state_update_days_ago | How many days ago was the terraform state updated in this workspace | string   |
-    | average_run_time           | Average time, in seconds, of a planned-and-applied run              | string   |
+    | average_run_duration       | Average duration, in seconds, of a planned-and-applied run          | string   |
 
  
   ```bash 
@@ -179,7 +179,7 @@ Use "tfectl [command] --help" for more information about a command.
         "updated_days_ago": "2.279692",
         "last_remote_run_days_ago": "2.281231",
         "last_state_update_days_ago": "30.174812",
-        "average_run_time": "16.334562"
+        "average_run_duration": "16.334562"
       }
     ]
   ```
