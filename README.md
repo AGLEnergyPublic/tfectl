@@ -160,6 +160,7 @@ Use "tfectl [command] --help" for more information about a command.
     | updated_days_ago           | How many days ago this workspace was updated                        | string   |
     | last_remote_run_days_ago   | How many days ago was a remote run performed in this workspace      | string   |
     | last_state_update_days_ago | How many days ago was the terraform state updated in this workspace | string   |
+    | average_run_time           | Average time, in seconds, of a planned-and-applied run              | string   |
 
  
   ```bash 
@@ -177,7 +178,8 @@ Use "tfectl [command] --help" for more information about a command.
         "created_days_ago": "819.167082",
         "updated_days_ago": "2.279692",
         "last_remote_run_days_ago": "2.281231",
-        "last_state_update_days_ago": "30.174812"
+        "last_state_update_days_ago": "30.174812",
+        "average_run_time": "16.334562"
       }
     ]
   ```
@@ -255,7 +257,8 @@ Use "tfectl [command] --help" for more information about a command.
             "id": "run-zQFc5h2uPhEWW9Sr",
             "status": "policy_checked",
             "workspace_id": "ws-NMH66XMnUeF8duTx",
-            "workspace_name": "tfc-infra-workspace"
+            "workspace_name": "tfc-infra-workspace",
+            "run_duration": "54.476822"
         }
     ]
   ```
@@ -270,7 +273,8 @@ Use "tfectl [command] --help" for more information about a command.
         "id": "run-pX9Lrq5KCrsgCYFH",
         "workspace_id": "ws-DpeRu7KpazXEWKoJ",
         "workspace_name": "workspace-sandbox",
-        "status": "pending"
+        "status": "pending",
+        "run_duration": "NA"
       }
     ]
   ```
@@ -285,7 +289,8 @@ Use "tfectl [command] --help" for more information about a command.
         "id": "run-UowKQd1cF7bgNfCp",
         "workspace_id": "ws-N2qoyJxF1TkfeRYy",
         "workspace_name": "test-workspace-2",
-        "status": "applying"
+        "status": "applying",
+        "run_duration": "NA"
       }
     ]
   ```
@@ -300,7 +305,8 @@ Use "tfectl [command] --help" for more information about a command.
         "id": "run-UowKQd1cF7bgNfCp",
         "workspace_id": "ws-N2qoyJxF1TkfeRYy",
         "workspace_name": "test-workspace-2",
-        "status": "applied"
+        "status": "applied",
+        "run_duration": "180.452271"
       }
     ]
   ```

@@ -66,6 +66,10 @@ var runListCmd = &cobra.Command{
 				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.AppliedAt.Sub(run.CreatedAt).Seconds())
 			case tfe.RunPlannedAndFinished:
 				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndFinishedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPlannedAndSaved:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndSavedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPolicyChecked:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PolicyCheckedAt.Sub(run.CreatedAt).Seconds())
 			}
 
 			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"%s"}`, run.ID, workspaceID, workspaceName, run.Status, runDuration)
@@ -233,6 +237,10 @@ var runGetCmd = &cobra.Command{
 				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.AppliedAt.Sub(run.CreatedAt).Seconds())
 			case tfe.RunPlannedAndFinished:
 				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndFinishedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPlannedAndSaved:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndSavedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPolicyChecked:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PolicyCheckedAt.Sub(run.CreatedAt).Seconds())
 			}
 
 			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"%s"}`, run.ID, workspaceID, workspaceName, run.Status, runDuration)
