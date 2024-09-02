@@ -173,6 +173,7 @@ type Workspace struct {
 	Locked                      bool                            `jsonapi:"attr,locked"`
 	MigrationEnvironment        string                          `jsonapi:"attr,migration-environment"`
 	Name                        string                          `jsonapi:"attr,name"`
+	NoCodeUpgradeAvailable      bool                            `jsonapi:"attr,no-code-upgrade-available"`
 	Operations                  bool                            `jsonapi:"attr,operations"`
 	Permissions                 *WorkspacePermissions           `jsonapi:"attr,permissions"`
 	QueueAllRuns                bool                            `jsonapi:"attr,queue-all-runs"`
@@ -699,7 +700,7 @@ func (s *workspaces) List(ctx context.Context, organization string, options *Wor
 		return nil, err
 	}
 
-	u := fmt.Sprintf("organizations/%s/workspaces", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s/workspaces", url.PathEscape(organization))
 	req, err := s.client.NewRequest("GET", u, options)
 	if err != nil {
 		return nil, err
@@ -723,7 +724,7 @@ func (s *workspaces) Create(ctx context.Context, organization string, options Wo
 		return nil, err
 	}
 
-	u := fmt.Sprintf("organizations/%s/workspaces", url.QueryEscape(organization))
+	u := fmt.Sprintf("organizations/%s/workspaces", url.PathEscape(organization))
 	req, err := s.client.NewRequest("POST", u, &options)
 	if err != nil {
 		return nil, err
@@ -757,8 +758,8 @@ func (s *workspaces) ReadWithOptions(ctx context.Context, organization, workspac
 
 	u := fmt.Sprintf(
 		"organizations/%s/workspaces/%s",
-		url.QueryEscape(organization),
-		url.QueryEscape(workspace),
+		url.PathEscape(organization),
+		url.PathEscape(workspace),
 	)
 	req, err := s.client.NewRequest("GET", u, options)
 	if err != nil {
@@ -792,7 +793,7 @@ func (s *workspaces) ReadByIDWithOptions(ctx context.Context, workspaceID string
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("GET", u, options)
 	if err != nil {
 		return nil, err
@@ -822,7 +823,7 @@ func (s *workspaces) Readme(ctx context.Context, workspaceID string) (io.Reader,
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s?include=readme", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s?include=readme", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
@@ -854,8 +855,8 @@ func (s *workspaces) Update(ctx context.Context, organization, workspace string,
 
 	u := fmt.Sprintf(
 		"organizations/%s/workspaces/%s",
-		url.QueryEscape(organization),
-		url.QueryEscape(workspace),
+		url.PathEscape(organization),
+		url.PathEscape(workspace),
 	)
 	req, err := s.client.NewRequest("PATCH", u, &options)
 	if err != nil {
@@ -877,7 +878,7 @@ func (s *workspaces) UpdateByID(ctx context.Context, workspaceID string, options
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("PATCH", u, &options)
 	if err != nil {
 		return nil, err
@@ -903,8 +904,8 @@ func (s *workspaces) Delete(ctx context.Context, organization, workspace string)
 
 	u := fmt.Sprintf(
 		"organizations/%s/workspaces/%s",
-		url.QueryEscape(organization),
-		url.QueryEscape(workspace),
+		url.PathEscape(organization),
+		url.PathEscape(workspace),
 	)
 	req, err := s.client.NewRequest("DELETE", u, nil)
 	if err != nil {
@@ -920,7 +921,7 @@ func (s *workspaces) DeleteByID(ctx context.Context, workspaceID string) error {
 		return ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("DELETE", u, nil)
 	if err != nil {
 		return err
@@ -940,8 +941,8 @@ func (s *workspaces) SafeDelete(ctx context.Context, organization, workspace str
 
 	u := fmt.Sprintf(
 		"organizations/%s/workspaces/%s/actions/safe-delete",
-		url.QueryEscape(organization),
-		url.QueryEscape(workspace),
+		url.PathEscape(organization),
+		url.PathEscape(workspace),
 	)
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
@@ -957,7 +958,7 @@ func (s *workspaces) SafeDeleteByID(ctx context.Context, workspaceID string) err
 		return ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/actions/safe-delete", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/actions/safe-delete", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return err
@@ -977,8 +978,8 @@ func (s *workspaces) RemoveVCSConnection(ctx context.Context, organization, work
 
 	u := fmt.Sprintf(
 		"organizations/%s/workspaces/%s",
-		url.QueryEscape(organization),
-		url.QueryEscape(workspace),
+		url.PathEscape(organization),
+		url.PathEscape(workspace),
 	)
 
 	req, err := s.client.NewRequest("PATCH", u, &workspaceRemoveVCSConnectionOptions{})
@@ -1001,7 +1002,7 @@ func (s *workspaces) RemoveVCSConnectionByID(ctx context.Context, workspaceID st
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s", url.PathEscape(workspaceID))
 
 	req, err := s.client.NewRequest("PATCH", u, &workspaceRemoveVCSConnectionOptions{})
 	if err != nil {
@@ -1023,7 +1024,7 @@ func (s *workspaces) Lock(ctx context.Context, workspaceID string, options Works
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/actions/lock", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/actions/lock", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("POST", u, &options)
 	if err != nil {
 		return nil, err
@@ -1044,7 +1045,7 @@ func (s *workspaces) Unlock(ctx context.Context, workspaceID string) (*Workspace
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/actions/unlock", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/actions/unlock", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return nil, err
@@ -1065,7 +1066,7 @@ func (s *workspaces) ForceUnlock(ctx context.Context, workspaceID string) (*Work
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/actions/force-unlock", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/actions/force-unlock", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return nil, err
@@ -1089,7 +1090,7 @@ func (s *workspaces) AssignSSHKey(ctx context.Context, workspaceID string, optio
 		return nil, err
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/ssh-key", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/ssh-key", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("PATCH", u, &options)
 	if err != nil {
 		return nil, err
@@ -1110,7 +1111,7 @@ func (s *workspaces) UnassignSSHKey(ctx context.Context, workspaceID string) (*W
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/ssh-key", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/ssh-key", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("PATCH", u, &workspaceUnassignSSHKeyOptions{})
 	if err != nil {
 		return nil, err
@@ -1131,7 +1132,7 @@ func (s *workspaces) ListRemoteStateConsumers(ctx context.Context, workspaceID s
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.PathEscape(workspaceID))
 
 	req, err := s.client.NewRequest("GET", u, options)
 	if err != nil {
@@ -1156,7 +1157,7 @@ func (s *workspaces) AddRemoteStateConsumers(ctx context.Context, workspaceID st
 		return err
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("POST", u, options.Workspaces)
 	if err != nil {
 		return err
@@ -1174,7 +1175,7 @@ func (s *workspaces) RemoveRemoteStateConsumers(ctx context.Context, workspaceID
 		return err
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("DELETE", u, options.Workspaces)
 	if err != nil {
 		return err
@@ -1192,7 +1193,7 @@ func (s *workspaces) UpdateRemoteStateConsumers(ctx context.Context, workspaceID
 		return err
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/remote-state-consumers", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("PATCH", u, options.Workspaces)
 	if err != nil {
 		return err
@@ -1207,7 +1208,7 @@ func (s *workspaces) ListTags(ctx context.Context, workspaceID string, options *
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/tags", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/tags", url.PathEscape(workspaceID))
 
 	req, err := s.client.NewRequest("GET", u, options)
 	if err != nil {
@@ -1232,7 +1233,7 @@ func (s *workspaces) AddTags(ctx context.Context, workspaceID string, options Wo
 		return err
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/tags", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/tags", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("POST", u, options.Tags)
 	if err != nil {
 		return err
@@ -1250,7 +1251,7 @@ func (s *workspaces) RemoveTags(ctx context.Context, workspaceID string, options
 		return err
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/tags", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/tags", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("DELETE", u, options.Tags)
 	if err != nil {
 		return err
@@ -1264,7 +1265,7 @@ func (s *workspaces) ReadDataRetentionPolicy(ctx context.Context, workspaceID st
 		return nil, ErrInvalidWorkspaceID
 	}
 
-	u := fmt.Sprintf("workspaces/%s/relationships/data-retention-policy", url.QueryEscape(workspaceID))
+	u := fmt.Sprintf("workspaces/%s/relationships/data-retention-policy", url.PathEscape(workspaceID))
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
@@ -1568,5 +1569,5 @@ func tagRegexDefined(options *VCSRepoOptions) bool {
 }
 
 func (s *workspaces) dataRetentionPolicyLink(wsID string) string {
-	return fmt.Sprintf("workspaces/%s/relationships/data-retention-policy", url.QueryEscape(wsID))
+	return fmt.Sprintf("workspaces/%s/relationships/data-retention-policy", url.PathEscape(wsID))
 }

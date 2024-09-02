@@ -165,6 +165,8 @@ type Client struct {
 	StackConfigurations        StackConfigurations
 	StackDeployments           StackDeployments
 	StackPlans                 StackPlans
+	StackPlanOperations        StackPlanOperations
+	StackSources               StackSources
 	StateVersionOutputs        StateVersionOutputs
 	StateVersions              StateVersions
 	TaskResults                TaskResults
@@ -245,11 +247,22 @@ func (c *Client) doForeignPUTRequest(ctx context.Context, foreignURL string, dat
 	return request.DoJSON(ctx, nil)
 }
 
-func (c *Client) NewRequest(method, path string, reqAttr any) (*ClientRequest, error) {
-	return c.NewRequestWithAdditionalQueryParams(method, path, reqAttr, nil)
+// NewRequest performs some basic API request preparation based on the method
+// specified. For GET requests, the reqBody is encoded as query parameters.
+// For DELETE, PATCH, and POST requests, the request body is serialized as JSONAPI.
+// For PUT requests, the request body is sent as a stream of bytes.
+func (c *Client) NewRequest(method, path string, reqBody any) (*ClientRequest, error) {
+	return c.NewRequestWithAdditionalQueryParams(method, path, reqBody, nil)
 }
 
-func (c *Client) NewRequestWithAdditionalQueryParams(method, path string, reqAttr any, additionalQueryParams map[string][]string) (*ClientRequest, error) {
+// NewRequestWithAdditionalQueryParams performs some basic API request
+// preparation based on the method specified. For GET requests, the reqBody is
+// encoded as query parameters. For DELETE, PATCH, and POST requests, the
+// request body is serialized as JSONAPI. For PUT requests, the request body is
+// sent as a stream of bytes. Additional query parameters can be added to the
+// request as a string map. Note that if a key exists in both the reqBody and
+// additionalQueryParams, the value in additionalQueryParams will be used.
+func (c *Client) NewRequestWithAdditionalQueryParams(method, path string, reqBody any, additionalQueryParams map[string][]string) (*ClientRequest, error) {
 	var u *url.URL
 	var err error
 	if strings.Contains(path, "/api/registry/") {
@@ -264,6 +277,8 @@ func (c *Client) NewRequestWithAdditionalQueryParams(method, path string, reqAtt
 		}
 	}
 
+	q := make(url.Values)
+
 	// Create a request specific headers map.
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Authorization", "Bearer "+c.token)
@@ -273,30 +288,33 @@ func (c *Client) NewRequestWithAdditionalQueryParams(method, path string, reqAtt
 	case "GET":
 		reqHeaders.Set("Accept", ContentTypeJSONAPI)
 
-		if reqAttr != nil {
-			q, err := query.Values(reqAttr)
+		// Encode the reqBody as query parameters
+		if reqBody != nil {
+			q, err = query.Values(reqBody)
 			if err != nil {
 				return nil, err
 			}
-			for k, v := range additionalQueryParams {
-				q[k] = v
-			}
-			u.RawQuery = encodeQueryParams(q)
 		}
 	case "DELETE", "PATCH", "POST":
 		reqHeaders.Set("Accept", ContentTypeJSONAPI)
 		reqHeaders.Set("Content-Type", ContentTypeJSONAPI)
 
-		if reqAttr != nil {
-			if body, err = serializeRequestBody(reqAttr); err != nil {
+		if reqBody != nil {
+			if body, err = serializeRequestBody(reqBody); err != nil {
 				return nil, err
 			}
 		}
 	case "PUT":
 		reqHeaders.Set("Accept", "application/json")
 		reqHeaders.Set("Content-Type", "application/octet-stream")
-		body = reqAttr
+		body = reqBody
 	}
+
+	for k, v := range additionalQueryParams {
+		q[k] = v
+	}
+
+	u.RawQuery = encodeQueryParams(q)
 
 	req, err := retryablehttp.NewRequest(method, u.String(), body)
 	if err != nil {
@@ -470,6 +488,8 @@ func NewClient(cfg *Config) (*Client, error) {
 	client.StackConfigurations = &stackConfigurations{client: client}
 	client.StackDeployments = &stackDeployments{client: client}
 	client.StackPlans = &stackPlans{client: client}
+	client.StackPlanOperations = &stackPlanOperations{client: client}
+	client.StackSources = &stackSources{client: client}
 	client.StateVersionOutputs = &stateVersionOutputs{client: client}
 	client.StateVersions = &stateVersions{client: client}
 	client.TaskResults = &taskResults{client: client}
@@ -719,7 +739,9 @@ func (c *Client) configureLimiter(rawLimit string) {
 }
 
 // encodeQueryParams encodes the values into "URL encoded" form
-// ("bar=baz&foo=quux") sorted by key.
+// ("bar=baz&foo=quux") sorted by key. This version behaves as url.Values
+// Encode, except that it encodes certain keys as comma-separated values instead
+// of using multiple keys.
 func encodeQueryParams(v url.Values) string {
 	if v == nil {
 		return ""
@@ -749,6 +771,17 @@ func encodeQueryParams(v url.Values) string {
 		}
 	}
 	return buf.String()
+}
+
+// decodeQueryParams types an object and converts the struct fields into
+// Query Parameters, which can be used with NewRequestWithAdditionalQueryParams
+// Note that a field without a `url` annotation will be converted into a query
+// parameter. Use url:"-" to ignore struct fields.
+func decodeQueryParams(v any) (url.Values, error) {
+	if v == nil {
+		return make(url.Values, 0), nil
+	}
+	return query.Values(v)
 }
 
 // serializeRequestBody serializes the given ptr or ptr slice into a JSON
