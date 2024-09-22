@@ -1,5 +1,55 @@
 # UNRELEASED
 
+# v1.65.0
+
+## Enhancements
+
+* Adds support for deleting `Stacks` that still have deployments through `ForceDelete` by @hashimoon [#969](https://github.com/hashicorp/go-tfe/pull/969)
+
+## Bug Fixes
+
+* Fixed `RegistryNoCodeModules` method `UpgradeWorkspace` to return a `WorkspaceUpgrade` type. This resulted in a BREAKING CHANGE, yet the previous type was not properly decoded nor reflective of the actual API result by @paladin-devops [#955](https://github.com/hashicorp/go-tfe/pull/955)
+
+# v1.64.2
+
+## Enhancements
+
+* Adds support for including no-code permissions to the `OrganizationPermissions` struct [#967](https://github.com/hashicorp/go-tfe/pull/967)
+
+# v1.64.1
+
+## Bug Fixes
+
+* Fixes BETA feature regression in `Stacks` associated with decoding `StackVCSRepo` data by @brandonc [#964](https://github.com/hashicorp/go-tfe/pull/964)
+
+# v1.64.0
+
+* Adds support for creating different organization token types by @glennsarti [#943](https://github.com/hashicorp/go-tfe/pull/943)
+* Adds more BETA support for `Stacks` resources, which is is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @DanielMSchmidt [#963](https://github.com/hashicorp/go-tfe/pull/963)
+
+# v1.63.0
+
+## Enhancements
+
+* Adds more BETA support for `Stacks` resources, which is is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @brandonc [#957](https://github.com/hashicorp/go-tfe/pull/957) and @DanielMSchmidt [#960](https://github.com/hashicorp/go-tfe/pull/960)
+
+# v1.62.0
+
+## Bug Fixes
+
+* Fixed `RegistryNoCodeModules` methods `CreateWorkspace` and `UpdateWorkspace` to return a `Workspace` type. This resulted in a BREAKING CHANGE, yet the previous type was not properly decoded nor reflective of the actual API result by @paladin-devops [#954](https://github.com/hashicorp/go-tfe/pull/954)
+
+## Enhancements
+
+* Adds `AllowMemberTokenManagement` permission to `Team` by @juliannatetreault [#922](https://github.com/hashicorp/go-tfe/pull/922)
+
+# v1.61.0
+
+## Enhancements
+
+* Adds support for creating no-code workspaces by @paladin-devops [#927](https://github.com/hashicorp/go-tfe/pull/927)
+* Adds support for upgrading no-code workspaces by @paladin-devops [#935](https://github.com/hashicorp/go-tfe/pull/935)
+
 # v1.60.0
 
 ## Enhancements
