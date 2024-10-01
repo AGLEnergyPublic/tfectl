@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -113,9 +112,11 @@ var variableListCmd = &cobra.Command{
 
 		workspaceVarsListJson, _ = json.MarshalIndent(workspaceVarsList, "", "  ")
 		if query != "" {
-			resources.JqRun(workspaceVarsListJson, query)
+			outputJsonStr, err := resources.JqRun(workspaceVarsListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(workspaceVarsListJson))
+			cmd.Println(string(workspaceVarsListJson))
 		}
 	},
 }
@@ -145,9 +146,11 @@ var variableReadCmd = &cobra.Command{
 
 		variableJson, _ := json.MarshalIndent(v, "", "  ")
 		if query != "" {
-			resources.JqRun(variableJson, query)
+			outputJsonStr, err := resources.JqRun(variableJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(variableJson))
+			cmd.Println(string(variableJson))
 		}
 	},
 }
@@ -178,9 +181,11 @@ var variableCreateCmd = &cobra.Command{
 
 		variableJson, _ := json.MarshalIndent(v, "", "  ")
 		if query != "" {
-			resources.JqRun(variableJson, query)
+			outputJsonStr, err := resources.JqRun(variableJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(variableJson))
+			cmd.Println(string(variableJson))
 		}
 	},
 }
@@ -214,9 +219,11 @@ var variableCreateFromFileCmd = &cobra.Command{
 		}
 		ouputVariablesListJson, _ = json.MarshalIndent(outputVariablesList, "", "  ")
 		if query != "" {
-			resources.JqRun(ouputVariablesListJson, query)
+			outputJsonStr, err := resources.JqRun(ouputVariablesListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(ouputVariablesListJson))
+			cmd.Println(string(ouputVariablesListJson))
 		}
 	},
 }
@@ -244,9 +251,11 @@ var variableUpdateCmd = &cobra.Command{
 
 		variableJson, _ := json.MarshalIndent(v, "", "  ")
 		if query != "" {
-			resources.JqRun(variableJson, query)
+			outputJsonStr, err := resources.JqRun(variableJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(variableJson))
+			cmd.Println(string(variableJson))
 		}
 	},
 }
@@ -280,9 +289,11 @@ var variableUpdateFromFileCmd = &cobra.Command{
 		}
 		ouputVariablesListJson, _ = json.MarshalIndent(outputVariablesList, "", "  ")
 		if query != "" {
-			resources.JqRun(ouputVariablesListJson, query)
+			outputJsonStr, err := resources.JqRun(ouputVariablesListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(ouputVariablesListJson))
+			cmd.Println(string(ouputVariablesListJson))
 		}
 	},
 }
@@ -318,9 +329,11 @@ var variableDeleteCmd = &cobra.Command{
 		workspaceVarsList = append(workspaceVarsList, w)
 		workspaceVarsListJson, _ = json.MarshalIndent(workspaceVarsList, "", "  ")
 		if query != "" {
-			resources.JqRun(workspaceVarsListJson, query)
+			outputJsonStr, err := resources.JqRun(workspaceVarsListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(workspaceVarsListJson))
+			cmd.Println(string(workspaceVarsListJson))
 		}
 	},
 }

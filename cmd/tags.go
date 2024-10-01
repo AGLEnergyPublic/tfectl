@@ -54,9 +54,11 @@ var tagListCmd = &cobra.Command{
 		tagListJson, _ = json.MarshalIndent(tagList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(tagListJson, query)
+			outputJsonStr, err := resources.JqRun(tagListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(tagListJson))
+			cmd.Println(string(tagListJson))
 		}
 	},
 }

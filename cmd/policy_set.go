@@ -91,7 +91,30 @@ var policySetListCmd = &cobra.Command{
 			policiesSlice, err := json.Marshal(tmpPolicySetPolicyList)
 			check(err)
 
-			entry := fmt.Sprintf(`{"name":"%s","id":"%s","kind":"%s","global":%v,"workspaces":%v, "workspace_count":%d, "workspace_exclusion":%v, "projects":%v, "project_count":%d, "policies":%v, "policy_count":%d}`, policySet.Name, policySet.ID, policySet.Kind, policySet.Global, string(workspaceSlice), policySet.WorkspaceCount, string(workspaceExclSlice), string(projectSlice), policySet.ProjectCount, string(policiesSlice), policySet.PolicyCount)
+			entry := fmt.Sprintf(`{
+      "name":"%s",
+      "id":"%s",
+      "kind":"%s",
+      "global":%v,
+      "workspaces":%v,
+      "workspace_count":%d,
+      "workspace_exclusion":%v,
+      "projects":%v,
+      "project_count":%d,
+      "policies":%v,
+      "policy_count":%d
+    }`,
+				policySet.Name,
+				policySet.ID,
+				policySet.Kind,
+				policySet.Global,
+				string(workspaceSlice),
+				policySet.WorkspaceCount,
+				string(workspaceExclSlice),
+				string(projectSlice),
+				policySet.ProjectCount,
+				string(policiesSlice),
+				policySet.PolicyCount)
 			err = json.Unmarshal([]byte(entry), &tmpPolicySet)
 			check(err)
 
@@ -100,9 +123,11 @@ var policySetListCmd = &cobra.Command{
 		policySetListJson, _ = json.MarshalIndent(policySetList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(policySetListJson, query)
+			outputJsonStr, err := resources.JqRun(policySetListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(policySetListJson))
+			cmd.Println(string(policySetListJson))
 		}
 	},
 }

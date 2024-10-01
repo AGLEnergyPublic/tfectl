@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/AGLEnergyPublic/tfectl/resources"
 	tfe "github.com/hashicorp/go-tfe"
@@ -48,9 +47,11 @@ var registryModuleListCmd = &cobra.Command{
 		moduleListJson, _ := json.MarshalIndent(moduleList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(moduleListJson, query)
+			outputJsonStr, err := resources.JqRun(moduleListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(moduleListJson))
+			cmd.Println(string(moduleListJson))
 		}
 	},
 }
