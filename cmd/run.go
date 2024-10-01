@@ -18,6 +18,7 @@ type Run struct {
 	WorkspaceID   string `json:"workspace_id"`
 	WorkspaceName string `json:"workspace_name"`
 	Status        string `json:"status"`
+	RunDuration   string `json:"run_duration"`
 	//HasChanges    bool `json:"has_changes"`
 }
 
@@ -48,15 +49,41 @@ var runListCmd = &cobra.Command{
 		// List runs in workspace
 		var runs []*tfe.Run
 
-		runs, _ = listRuns(client, workspaceID, status, operation, listAll)
+		runs, err = listRuns(client, workspaceID, status, operation, listAll)
+		check(err)
 
 		var runJson []byte
 		var runList []Run
 
 		for _, run := range runs {
 			var tmpRun Run
+			runDuration := "NA"
+
 			log.Debugf("Processing run: %s - %s", run.ID, run.Status)
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, run.ID, workspaceID, workspaceName, run.Status)
+
+			switch runStatus := run.Status; runStatus {
+			case tfe.RunApplied:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.AppliedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPlannedAndFinished:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndFinishedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPlannedAndSaved:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndSavedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPolicyChecked:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PolicyCheckedAt.Sub(run.CreatedAt).Seconds())
+			}
+
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"%s"
+      }`,
+				run.ID,
+				workspaceID,
+				workspaceName,
+				run.Status,
+				runDuration)
 
 			err := json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -66,9 +93,11 @@ var runListCmd = &cobra.Command{
 		runJson, _ = json.MarshalIndent(runList, "", "  ")
 
 		if query != "" {
-			resources.JqRun(runJson, query)
+			outputJsonStr, err := resources.JqRun(runJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(runJson))
+			cmd.Println(string(runJson))
 		}
 
 	},
@@ -121,7 +150,17 @@ var runQueueCmd = &cobra.Command{
 			run, err := queueRun(client, organization, workspace)
 			check(err)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, run.ID, run.Workspace.ID, workspace.Name, run.Status)
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				run.ID,
+				run.Workspace.ID,
+				workspace.Name,
+				run.Status)
 
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -131,9 +170,11 @@ var runQueueCmd = &cobra.Command{
 
 		runListJson, _ = json.MarshalIndent(runList, "", "  ")
 		if query != "" {
-			resources.JqRun(runListJson, query)
+			outputJsonStr, err := resources.JqRun(runListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(runListJson))
+			cmd.Println(string(runListJson))
 		}
 	},
 }
@@ -167,7 +208,17 @@ var runApplyCmd = &cobra.Command{
 			log.Debugf("Applying run with id: %s", id)
 			applyRun(client, id)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, id, workspaceID, workspaceName, "applying")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"applying")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 			runApplyList = append(runApplyList, tmpRun)
@@ -175,9 +226,11 @@ var runApplyCmd = &cobra.Command{
 
 		runApplyListJson, _ = json.MarshalIndent(runApplyList, "", "  ")
 		if query != "" {
-			resources.JqRun(runApplyListJson, query)
+			outputJsonStr, err := resources.JqRun(runApplyListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(runApplyListJson))
+			cmd.Println(string(runApplyListJson))
 		}
 	},
 }
@@ -197,6 +250,8 @@ var runGetCmd = &cobra.Command{
 		var runGetListJson []byte
 		var runGetList []Run
 
+		runDuration := "NA"
+
 		idList := strings.Split(ids, ",")
 		for _, id := range idList {
 			var tmpRun Run
@@ -208,7 +263,18 @@ var runGetCmd = &cobra.Command{
 			// get workspaceName from run
 			workspaceName, _ := getWorkspaceNameByID(client, organization, workspaceID)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, run.ID, workspaceID, workspaceName, run.Status)
+			switch runStatus := run.Status; runStatus {
+			case tfe.RunApplied:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.AppliedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPlannedAndFinished:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndFinishedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPlannedAndSaved:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PlannedAndSavedAt.Sub(run.CreatedAt).Seconds())
+			case tfe.RunPolicyChecked:
+				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PolicyCheckedAt.Sub(run.CreatedAt).Seconds())
+			}
+
+			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"%s"}`, run.ID, workspaceID, workspaceName, run.Status, runDuration)
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -217,9 +283,11 @@ var runGetCmd = &cobra.Command{
 
 		runGetListJson, _ = json.MarshalIndent(runGetList, "", "  ")
 		if query != "" {
-			resources.JqRun(runGetListJson, query)
+			outputJsonStr, err := resources.JqRun(runGetListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(runGetListJson))
+			cmd.Println(string(runGetListJson))
 		}
 	},
 }
@@ -282,7 +350,17 @@ var runCancelCmd = &cobra.Command{
 				cancelRun(client, id)
 			}
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, id, workspaceID, workspaceName, "cancelling")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"cancelling")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -291,9 +369,11 @@ var runCancelCmd = &cobra.Command{
 
 		runCancelListJson, _ = json.MarshalIndent(runCancelList, "", "  ")
 		if query != "" {
-			resources.JqRun(runCancelListJson, query)
+			outputJsonStr, err := resources.JqRun(runCancelListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(runCancelListJson))
+			cmd.Println(string(runCancelListJson))
 		}
 	},
 }
@@ -351,7 +431,17 @@ var runDiscardCmd = &cobra.Command{
 			log.Debugf("Discarding run with id: %s", id)
 			discardRun(client, id)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, id, workspaceID, workspaceName, "discarding")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "run_duration":"NA"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"discarding")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -360,9 +450,11 @@ var runDiscardCmd = &cobra.Command{
 
 		runDiscardListJson, _ = json.MarshalIndent(runDiscardList, "", "  ")
 		if query != "" {
-			resources.JqRun(runDiscardListJson, query)
+			outputJsonStr, err := resources.JqRun(runDiscardListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(runDiscardListJson))
+			cmd.Println(string(runDiscardListJson))
 		}
 	},
 }

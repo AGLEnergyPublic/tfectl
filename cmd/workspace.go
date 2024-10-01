@@ -23,6 +23,7 @@ type WorkspaceDetail struct {
 	UpdatedDaysAgo         string `json:"updated_days_ago"`
 	LastRemoteRunDaysAgo   string `json:"last_remote_run_days_ago"`
 	LastStateUpdateDaysAgo string `json:"last_state_update_days_ago"`
+	AverageRunDuration     string `json:"average_run_duration"`
 }
 
 type Workspace struct {
@@ -71,9 +72,11 @@ var workspaceGetCmd = &cobra.Command{
 
 		workspaceListJson, _ := json.MarshalIndent(workspaceList, "", "  ")
 		if query != "" {
-			resources.JqRun(workspaceListJson, query)
+			outputJsonStr, err := resources.JqRun(workspaceListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(workspaceListJson))
+			cmd.Println(string(workspaceListJson))
 		}
 
 	},
@@ -105,7 +108,18 @@ var workspaceListCmd = &cobra.Command{
 				var tmpWorkspace Workspace
 
 				log.Debugf("Processing workspace: %s - %s", workspace.Name, workspace.ID)
-				entry := fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v,"execution_mode":"%s","terraform_version":"%s"}`, workspace.Name, workspace.ID, workspace.Locked, workspace.ExecutionMode, workspace.TerraformVersion)
+				entry := fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v,
+          "execution_mode":"%s",
+          "terraform_version":"%s"
+        }`,
+					workspace.Name,
+					workspace.ID,
+					workspace.Locked,
+					workspace.ExecutionMode,
+					workspace.TerraformVersion)
 				err := json.Unmarshal([]byte(entry), &tmpWorkspace)
 				check(err)
 
@@ -168,9 +182,11 @@ var workspaceListCmd = &cobra.Command{
 		}
 
 		if query != "" {
-			resources.JqRun(workspaceJson, query)
+			outputJsonStr, err := resources.JqRun(workspaceJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(workspaceJson))
+			cmd.Println(string(workspaceJson))
 		}
 
 	},
@@ -194,9 +210,11 @@ var workspaceLockAllCmd = &cobra.Command{
 
 		lockedWorkspaceListJson, _ := json.MarshalIndent(lockedWorkspaceList, "", " ")
 		if query != "" {
-			resources.JqRun(lockedWorkspaceListJson, query)
+			outputJsonStr, err := resources.JqRun(lockedWorkspaceListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(lockedWorkspaceListJson))
+			cmd.Println(string(lockedWorkspaceListJson))
 		}
 	},
 }
@@ -262,18 +280,33 @@ var workspaceLockCmd = &cobra.Command{
 
 			workspace, err := lockWorkspace(client, organization, wrk.WorkspaceID, &reason)
 			if err != nil {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":true}`, wrk.WorkspaceName, wrk.WorkspaceID)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":true
+        }`,
+					wrk.WorkspaceName,
+					wrk.WorkspaceID)
 			} else {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v}`, workspace.Name, workspace.ID, workspace.Locked)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v
+        }`,
+					workspace.Name,
+					workspace.ID,
+					workspace.Locked)
 			}
 			_ = json.Unmarshal([]byte(entry), &lockedWorkspace)
 			lockedWorkspaceList = append(lockedWorkspaceList, lockedWorkspace)
 		}
 		lockedWorkspaceListJson, _ := json.MarshalIndent(lockedWorkspaceList, "", "  ")
 		if query != "" {
-			resources.JqRun(lockedWorkspaceListJson, query)
+			outputJsonStr, err := resources.JqRun(lockedWorkspaceListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(lockedWorkspaceListJson))
+			cmd.Println(string(lockedWorkspaceListJson))
 		}
 	},
 }
@@ -295,9 +328,11 @@ var workspaceUnlockAllCmd = &cobra.Command{
 
 		unlockedWorkspaceListJson, _ := json.MarshalIndent(unlockedWorkspaceList, "", "  ")
 		if query != "" {
-			resources.JqRun(unlockedWorkspaceListJson, query)
+			outputJsonStr, err := resources.JqRun(unlockedWorkspaceListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(unlockedWorkspaceListJson))
+			cmd.Println(string(unlockedWorkspaceListJson))
 		}
 	},
 }
@@ -362,9 +397,22 @@ var workspaceUnlockCmd = &cobra.Command{
 
 			workspace, err := unlockWorkspace(client, organization, wrk.WorkspaceID)
 			if err != nil {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":false}`, workspace.Name, workspace.ID)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":false
+        }`,
+					workspace.Name,
+					workspace.ID)
 			} else {
-				entry = fmt.Sprintf(`{"name":"%s","id":"%s","locked":%v}`, workspace.Name, workspace.ID, workspace.Locked)
+				entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v
+        }`,
+					workspace.Name,
+					workspace.ID,
+					workspace.Locked)
 			}
 
 			_ = json.Unmarshal([]byte(entry), &unlockedWorkspace)
@@ -372,9 +420,11 @@ var workspaceUnlockCmd = &cobra.Command{
 		}
 		unlockedWorkspaceListJson, _ := json.MarshalIndent(unlockedWorkspaceList, "", "  ")
 		if query != "" {
-			resources.JqRun(unlockedWorkspaceListJson, query)
+			outputJsonStr, err := resources.JqRun(unlockedWorkspaceListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(unlockedWorkspaceListJson))
+			cmd.Println(string(unlockedWorkspaceListJson))
 		}
 	},
 }
@@ -446,7 +496,7 @@ func listWorkspaces(client *tfe.Client, organization string, filter string) ([]*
 		results = append(results, w.Items...)
 
 		// Check if there is another poage to retrieve.
-		if w.Pagination.NextPage == 0 {
+		if w.NextPage == 0 {
 			break
 		}
 
@@ -483,23 +533,40 @@ func getWorkspace(client *tfe.Client, organization string, workspaceID string) (
 	result.UpdatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.UpdatedAt).Hours()/24)
 	result.LastRemoteRunDaysAgo = workspaceDetails.LastRemoteRunDaysAgo
 	result.LastStateUpdateDaysAgo = workspaceDetails.LastStateUpdateDaysAgo
+	result.AverageRunDuration = workspaceDetails.AverageRunDuration
 
 	return result, nil
 }
 
 func getWorkspaceDetails(client *tfe.Client, organization string, workspaceID string) (WorkspaceDetail, error) {
-	results := WorkspaceDetail{}
+	result := WorkspaceDetail{}
 
-	rList, err := client.Runs.List(context.Background(), workspaceID, &tfe.RunListOptions{
-		ListOptions: tfe.ListOptions{
-			PageSize: 1,
-		},
-	})
+	rList, err := listRuns(client, workspaceID, "applied,planned_and_finished", "", false)
 	check(err)
 
 	lastRemoteRunDaysAgo := "NA"
-	if len(rList.Items) > 0 {
-		lastRemoteRunDaysAgo = fmt.Sprintf("%f", time.Since(rList.Items[0].CreatedAt).Hours()/24)
+	if len(rList) > 0 {
+		lastRemoteRunDaysAgo = fmt.Sprintf("%f", time.Since(rList[0].CreatedAt).Hours()/24)
+		// Determine average run-time for applied and planned_and_finished runs
+		numberOfRuns := len(rList)
+		var cumulativeRunDuration float64
+		for _, r := range rList {
+
+			var runDuration float64
+			switch runStatus := r.Status; runStatus {
+			case tfe.RunApplied:
+				runDuration = r.StatusTimestamps.AppliedAt.Sub(r.CreatedAt).Seconds()
+			case tfe.RunPlannedAndFinished:
+				runDuration = r.StatusTimestamps.PlannedAndFinishedAt.Sub(r.CreatedAt).Seconds()
+			}
+
+			cumulativeRunDuration += runDuration
+
+		}
+
+		result.AverageRunDuration = fmt.Sprintf("%f", cumulativeRunDuration/float64(numberOfRuns))
+	} else {
+		result.AverageRunDuration = "NA"
 	}
 
 	// Determine when current state-version was created
@@ -516,10 +583,10 @@ func getWorkspaceDetails(client *tfe.Client, organization string, workspaceID st
 		lastStateUpdateDaysAgo = fmt.Sprintf("%f", time.Since(stateVersion.CreatedAt).Hours()/24)
 	}
 
-	results.LastRemoteRunDaysAgo = lastRemoteRunDaysAgo
-	results.LastStateUpdateDaysAgo = lastStateUpdateDaysAgo
+	result.LastRemoteRunDaysAgo = lastRemoteRunDaysAgo
+	result.LastStateUpdateDaysAgo = lastStateUpdateDaysAgo
 
-	return results, nil
+	return result, nil
 }
 
 func lockAllWorkspaces(client *tfe.Client, organization string, lockReason *string) ([]WorkspaceLock, error) {

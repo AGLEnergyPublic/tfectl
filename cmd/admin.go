@@ -50,7 +50,16 @@ var adminRunListCmd = &cobra.Command{
 			log.Debugf("Processing run %s", run.ID)
 
 			workspaceName, _ := getWorkspaceNameByID(client, organization, run.Workspace.ID)
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, run.ID, run.Workspace.ID, workspaceName, run.Status)
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s"
+      }`,
+				run.ID,
+				run.Workspace.ID,
+				workspaceName,
+				run.Status)
 
 			err = json.Unmarshal([]byte(entry), &tmpAdminRun)
 			check(err)
@@ -60,9 +69,11 @@ var adminRunListCmd = &cobra.Command{
 
 		adminRunListJson, _ = json.MarshalIndent(adminRunList, "", "  ")
 		if query != "" {
-			resources.JqRun(adminRunListJson, query)
+			outputJsonStr, err := resources.JqRun(adminRunListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(adminRunListJson))
+			cmd.Println(string(adminRunListJson))
 		}
 	},
 }
@@ -95,7 +106,16 @@ var adminRunForceCancelCmd = &cobra.Command{
 
 			adminForceCancelRun(client, id)
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s"}`, id, workspaceID, workspaceName, "cancelling")
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s"
+      }`,
+				id,
+				workspaceID,
+				workspaceName,
+				"cancelling")
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -103,9 +123,11 @@ var adminRunForceCancelCmd = &cobra.Command{
 		}
 		adminRunForceCancelListJson, _ = json.MarshalIndent(adminRunForceCancelList, "", "  ")
 		if query != "" {
-			resources.JqRun(adminRunForceCancelListJson, query)
+			outputJsonStr, err := resources.JqRun(adminRunForceCancelListJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
 		} else {
-			fmt.Println(string(adminRunForceCancelListJson))
+			cmd.Println(string(adminRunForceCancelListJson))
 		}
 	},
 }

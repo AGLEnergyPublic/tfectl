@@ -2,7 +2,6 @@ package resources
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 
 	jq "github.com/itchyny/gojq"
@@ -12,7 +11,7 @@ import (
 // Constructor
 var inputConstr func() interface{}
 
-func JqRun(jsonStr []byte, query string) {
+func JqRun(jsonStr []byte, query string) ([]byte, error) {
 	q, err := jq.Parse(query)
 	if err != nil {
 		log.Fatal(err)
@@ -56,6 +55,6 @@ func JqRun(jsonStr []byte, query string) {
 		output = append(output, v)
 	}
 
-	outputJsonStr, _ = json.MarshalIndent(output, "", "  ")
-	fmt.Println(string(outputJsonStr))
+	outputJsonStr, err = json.MarshalIndent(output, "", "  ")
+	return outputJsonStr, err
 }
