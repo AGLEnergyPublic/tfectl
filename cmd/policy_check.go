@@ -63,6 +63,34 @@ var policyCheckShowCmd = &cobra.Command{
 	},
 }
 
+var policyCheckOverrideCmd = &cobra.Command{
+	Use:   "override",
+	Short: "Override the policy check for a given TFE run",
+	Long:  `Override the policy  check for a given TFE run.`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		_, client, err := resources.Setup(cmd)
+		check(err)
+
+		policyCheckId, _ := cmd.Flags().GetString("policy-check-id")
+		query, _ := cmd.Flags().GetString("query")
+
+		var policyCheckJson []byte
+
+		policyCheck, _ := overridePolicyChecks(client, policyCheckId)
+
+		policyCheckJson, _ = json.MarshalIndent(policyCheck, "", "  ")
+		if query != "" {
+			outputJsonStr, err := resources.JqRun(policyCheckJson, query)
+			check(err)
+			cmd.Println(string(outputJsonStr))
+		} else {
+			cmd.Println(string(policyCheckJson))
+		}
+
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(policyCheckCmd)
 
@@ -70,6 +98,11 @@ func init() {
 	// Returns the detailed policy check results for a given list of RunIDs
 	policyCheckCmd.AddCommand(policyCheckShowCmd)
 	policyCheckShowCmd.Flags().String("run-id", "", "RunId to inspect")
+
+	// Override sub-command
+	// Overrides a given policy check
+	policyCheckCmd.AddCommand(policyCheckOverrideCmd)
+	policyCheckOverrideCmd.Flags().String("policy-check-id", "", "ID of the policy-check to override")
 }
 
 func showPolicyChecks(client *tfe.Client, runID string) (PolicyCheck, error) {
@@ -81,6 +114,27 @@ func showPolicyChecks(client *tfe.Client, runID string) (PolicyCheck, error) {
 	check(err)
 
 	polchk := pc.Items[0]
+
+	result.ID = polchk.ID
+	result.Scope = polchk.Scope
+	result.Status = polchk.Status
+	result.Result.AdvisoryFailed = polchk.Result.AdvisoryFailed
+	result.Result.HardFailed = polchk.Result.HardFailed
+	result.Result.TotalFailed = polchk.Result.TotalFailed
+	result.Result.SoftFailed = polchk.Result.SoftFailed
+	result.Result.Passed = polchk.Result.Passed
+	result.Result.Sentinel = polchk.Result.Sentinel
+	result.Result.Result = polchk.Result.Result
+
+	return result, nil
+}
+
+func overridePolicyChecks(client *tfe.Client, policyCheckID string) (PolicyCheck, error) {
+	result := PolicyCheck{}
+	log.Debugf("Overriding policy check: %s\n", policyCheckID)
+
+	polchk, err := client.PolicyChecks.Override(context.Background(), policyCheckID)
+	check(err)
 
 	result.ID = polchk.ID
 	result.Scope = polchk.Scope
