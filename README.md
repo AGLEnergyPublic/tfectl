@@ -675,6 +675,38 @@ Use "tfectl [command] --help" for more information about a command.
         }
     ]
   ```
+* #### 2. Override
+  * Where applicable, overrides policy checks with a given PolicyCheckID
+  ```bash
+  $ tfectl policy-check override --policy-check-id polchk-s6moSXCk5e7dm1oR
+  {
+      "id": "polchk-s6moSXCk5e7dm1oR",
+      "result": {
+          "advisory_failed": 0,
+          "hard_failed": 0,
+          "passed": 0,
+          "result": false,
+          "soft_failed": 1,
+          "total_failed": 1,
+          "sentinel": {
+              "data": {
+                  "": {
+                      "duration": 0,
+                      "error": null,
+                      "policies": [
+                      # OUTPUT TRUNCATED
+                      ],
+                      "result": false,
+                      "warnings": null
+                  }
+              },
+              "schema-version": 1
+          }
+      },
+      "status": "overridden", # OVERRIDDEN
+      "scope": "organization"
+  }
+  ```
 </details>
 
 ### Registry Modules
