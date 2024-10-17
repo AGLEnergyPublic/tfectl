@@ -383,7 +383,7 @@ var runCancelCmd = &cobra.Command{
 				workspaceID,
 				workspaceName,
 				"cancelling",
-				run.CreatedAt)
+				run.CreatedAt.Format(time.RFC3339))
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -466,7 +466,7 @@ var runDiscardCmd = &cobra.Command{
 				workspaceID,
 				workspaceName,
 				"discarding",
-				run.CreatedAt)
+				run.CreatedAt.Format(time.RFC3339))
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
