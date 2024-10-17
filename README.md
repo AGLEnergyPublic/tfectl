@@ -258,6 +258,7 @@ Use "tfectl [command] --help" for more information about a command.
             "status": "policy_checked",
             "workspace_id": "ws-NMH66XMnUeF8duTx",
             "workspace_name": "tfc-infra-workspace",
+            "created_at": "2024-09-24T06:12:56Z",
             "run_duration": "54.476822"
         }
     ]
@@ -274,6 +275,7 @@ Use "tfectl [command] --help" for more information about a command.
         "workspace_id": "ws-DpeRu7KpazXEWKoJ",
         "workspace_name": "workspace-sandbox",
         "status": "pending",
+        "created_at": "2024-09-24T06:12:56Z",
         "run_duration": "NA"
       }
     ]
@@ -290,6 +292,7 @@ Use "tfectl [command] --help" for more information about a command.
         "workspace_id": "ws-N2qoyJxF1TkfeRYy",
         "workspace_name": "test-workspace-2",
         "status": "applying",
+        "created_at": "2024-09-24T06:12:56Z",
         "run_duration": "NA"
       }
     ]
@@ -306,6 +309,7 @@ Use "tfectl [command] --help" for more information about a command.
         "workspace_id": "ws-N2qoyJxF1TkfeRYy",
         "workspace_name": "test-workspace-2",
         "status": "applied",
+        "created_at": "2024-09-24T06:12:56Z",
         "run_duration": "180.452271"
       }
     ]
