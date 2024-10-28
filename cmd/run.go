@@ -21,7 +21,7 @@ type Run struct {
 	Status        string `json:"status"`
 	CreatedAt     string `json:"created_at"`
 	RunDuration   string `json:"run_duration"`
-	//HasChanges    bool `json:"has_changes"`
+	PlanID        string `json:"plan_id"`
 }
 
 var runCmd = &cobra.Command{
@@ -80,14 +80,16 @@ var runListCmd = &cobra.Command{
         "workspace_name":"%s",
         "status":"%s",
         "created_at": "%s",
-        "run_duration":"%s"
+        "run_duration":"%s",
+        "plan_id": "%s"
       }`,
 				run.ID,
 				workspaceID,
 				workspaceName,
 				run.Status,
 				run.CreatedAt.Format(time.RFC3339),
-				runDuration)
+				runDuration,
+				run.Plan.ID)
 
 			err := json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)

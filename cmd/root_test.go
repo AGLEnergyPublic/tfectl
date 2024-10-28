@@ -15,6 +15,7 @@ Available Commands:
   admin             Manage TFE admin operations
   completion        Generate the autocompletion script for the specified shell
   help              Help about any command
+  plan              Query TFE Plans
   policy            Query TFE policies
   policy-check      Manage policy check workflows of a TFE run
   policy-set        Query TFE policy sets

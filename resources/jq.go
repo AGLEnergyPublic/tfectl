@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"bytes"
 	"encoding/json"
 	"reflect"
 
@@ -12,6 +13,12 @@ import (
 var inputConstr func() interface{}
 
 func JqRun(jsonStr []byte, query string) ([]byte, error) {
+	var buffer bytes.Buffer
+	var jsonEnc = json.NewEncoder(&buffer)
+
+	jsonEnc.SetEscapeHTML(false)
+	jsonEnc.SetIndent("", "  ")
+
 	q, err := jq.Parse(query)
 	if err != nil {
 		log.Fatal(err)
@@ -55,6 +62,8 @@ func JqRun(jsonStr []byte, query string) ([]byte, error) {
 		output = append(output, v)
 	}
 
-	outputJsonStr, err = json.MarshalIndent(output, "", "  ")
+	err = jsonEnc.Encode(output)
+	outputJsonStr = buffer.Bytes()
+
 	return outputJsonStr, err
 }
