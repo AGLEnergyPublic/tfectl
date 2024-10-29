@@ -24,4 +24,8 @@ build:
 
 test:
 	@echo "==> Testing <=="
-	cd cmd/ && go test -v
+	cd cmd/ && go test -v -tags=all
+
+testworkspaces:
+	@echo "==> Testing Workspace <=="
+	cd cmd/ && go test -v -tags=workspace

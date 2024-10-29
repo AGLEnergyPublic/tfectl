@@ -22,6 +22,8 @@ var rootCmd = &cobra.Command{
 func RunRootCmd(cmd *cobra.Command, args []string) error {
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true
+	cmd.SetOut(os.Stdout)
+
 	if err := setUpLogs(l); err != nil {
 		return err
 	}

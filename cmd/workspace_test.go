@@ -1,3 +1,6 @@
+//go:build !all || workspace
+// +build !all workspace
+
 package cmd
 
 import (
