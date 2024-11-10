@@ -103,9 +103,23 @@ func showPlan(client *tfe.Client, planID string, detailedChanges bool) (Plan, er
 		//    <attribute.0>: <current_value> -> <planned_value>,
 		//    <attribute.1>: <current_value> -> <planned_value>,
 		// }
-		queryChangeString := `.resource_changes[] | select(.change.actions | inside(["create", "read", "update", "delete"])) | { (.address): (.change.after | with_entries(select(.value != .before)) | with_entries(.value = "\(.before) -> \(.value)")) }`
+		queryChangeString := `.resource_changes[]
+    | select(.change.actions | inside(["create", "read", "update", "delete"]))
+    | {
+      (.address): (
+        if .change.after == null then
+          "Resource will be destroyed"
+        else
+          .change.after
+          | with_entries(select(.value != .before))
+          | with_entries(.value = "\(.before) -> \(.value)")
+        end
+        )
+      }
+    `
 		out, err := resources.JqRun(planJsonOut, queryChangeString)
 		check(err)
+
 		json.Unmarshal(out, &result.ChangedResourceProperties)
 	}
 
