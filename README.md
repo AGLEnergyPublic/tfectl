@@ -556,14 +556,10 @@ Use "tfectl [command] --help" for more information about a command.
             "resource_imports": 0,
             "changed_resource_properties": [
                 {
-                    "terraform_data.scratch[0]": {
-                        "id": "91a17d36-5581-451d-b710-a6620856931f -> null"
-                    }
+                    "terraform_data.scratch[0]": {}
                 },
                 {
-                    "terraform_data.scratch[1]": {
-                        "id": "7a9ff963-1e63-43c1-b81e-775214b6ccc4 -> null"
-                    }
+                    "terraform_data.scratch[1]": {}
                 }
             ]
         }
