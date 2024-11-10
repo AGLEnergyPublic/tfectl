@@ -162,13 +162,15 @@ var runQueueCmd = &cobra.Command{
         "workspace_name":"%s",
         "status":"%s",
         "created_at": "%s",
-        "run_duration":"NA"
+        "run_duration":"NA",
+        "plan_id": "%s"
       }`,
 				run.ID,
 				run.Workspace.ID,
 				workspace.Name,
 				run.Status,
-				run.CreatedAt.Format(time.RFC3339))
+				run.CreatedAt.Format(time.RFC3339),
+				run.Plan.ID)
 
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -222,13 +224,15 @@ var runApplyCmd = &cobra.Command{
         "workspace_name":"%s",
         "status":"%s",
         "created_at": "%s",
-        "run_duration":"NA"
+        "run_duration":"NA",
+        "plan_id": "%s"
       }`,
 				id,
 				workspaceID,
 				workspaceName,
 				"applying",
-				run.CreatedAt.Format(time.RFC3339))
+				run.CreatedAt.Format(time.RFC3339),
+				run.Plan.ID)
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 			runApplyList = append(runApplyList, tmpRun)
@@ -290,14 +294,16 @@ var runGetCmd = &cobra.Command{
         "workspace_name":"%s",
         "status":"%s",
         "created_at": "%s",
-        "run_duration":"%s"
+        "run_duration":"%s",
+        "plan_id": "%s"
       }`,
 				run.ID,
 				workspaceID,
 				workspaceName,
 				run.Status,
 				run.CreatedAt.Format(time.RFC3339),
-				runDuration)
+				runDuration,
+				run.Plan.ID)
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 

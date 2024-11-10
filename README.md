@@ -19,6 +19,7 @@
     admin        Manage TFE admin operations
     completion   Generate the autocompletion script for the specified shell
     help         Help about any command
+    plan         Query TFE Plans
     policy       Query TFE policies
     policy-check Manage policy check workflows of a TFE run
     policy-set   Query TFE policy sets
@@ -513,6 +514,58 @@ Use "tfectl [command] --help" for more information about a command.
             "workspace_id": "ws-ojAyfT3ar4oXt3eA",
             "workspace_name": "workspace-infrastructure-production",
             "status": "cancelling"
+        }
+    ]
+  ```
+</details>
+
+### Plan
+<details>
+    <summary>Query plan summary</summary>
+
+* Query plan summary in TFE/TFC
+
+* #### Show
+  ```bash
+    $ tfectl plan show --ids plan-CRetbA3L01BsxeLq
+    [
+        {
+            "id": "plan-CRetbA3L01BsxeLq",
+            "has_changes": true,
+            "status": "finished",
+            "resource_additions": 2,
+            "resource_changes": 0,
+            "resource_destructions": 0,
+            "resource_imports": 0,
+            "changed_resource_properties": null
+        }
+    ]
+  ```
+
+* #### Show plan details (`--detailed-changes` flag)
+  ```bash
+    $ tfectl plan show --ids plan-CRetbA3L01BsxeLq --detailed-changes
+    [
+        {
+            "id": "plan-CRetbA3L01BsxeLq",
+            "has_changes": true,
+            "status": "finished",
+            "resource_additions": 2,
+            "resource_changes": 0,
+            "resource_destructions": 0,
+            "resource_imports": 0,
+            "changed_resource_properties": [
+                {
+                    "terraform_data.scratch[0]": {
+                        "id": "91a17d36-5581-451d-b710-a6620856931f -> null"
+                    }
+                },
+                {
+                    "terraform_data.scratch[1]": {
+                        "id": "7a9ff963-1e63-43c1-b81e-775214b6ccc4 -> null"
+                    }
+                }
+            ]
         }
     ]
   ```
