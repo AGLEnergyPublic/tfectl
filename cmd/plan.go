@@ -108,7 +108,7 @@ func showPlan(client *tfe.Client, planID string, detailedChanges bool) (Plan, er
 		// }
 		queryChangeString := `
   .resource_changes[]
-  | select(.change.actions | inside(["create", "update", "delete", "replace"]))
+  | select(.change.actions | inside(["create", "update", "delete", "read"]))
   |
     {
       address: .address,
