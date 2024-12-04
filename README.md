@@ -544,22 +544,56 @@ Use "tfectl [command] --help" for more information about a command.
 
 * #### Show plan details (`--detailed-changes` flag)
   ```bash
-    $ tfectl plan show --ids plan-CRetbA3L01BsxeLq --detailed-changes
+    $ tfectl plan show --ids plan-v6Li1Qvx3hbaKmGi --detailed-changes
     [
         {
-            "id": "plan-CRetbA3L01BsxeLq",
+            "id": "plan-v6Li1Qvx3hbaKmGi",
             "has_changes": true,
             "status": "finished",
-            "resource_additions": 2,
+            "resource_additions": 3,
             "resource_changes": 0,
-            "resource_destructions": 0,
+            "resource_destructions": 2,
             "resource_imports": 0,
             "changed_resource_properties": [
                 {
-                    "terraform_data.scratch[0]": {}
+                    "action": [
+                        "create"
+                    ],
+                    "address": "random_password.this",
+                    "attribute_changes": {
+                        "keepers": "null -> null",
+                        "length": "null -> 12",
+                        "lower": "null -> true",
+                        "min_lower": "null -> 0",
+                        "min_numeric": "null -> 0",
+                        "min_special": "null -> 0",
+                        "min_upper": "null -> 0",
+                        "number": "null -> true",
+                        "numeric": "null -> true",
+                        "override_special": "null -> null",
+                        "special": "null -> true",
+                        "upper": "null -> true"
+                    }
                 },
                 {
-                    "terraform_data.scratch[1]": {}
+                    "action": [
+                        "delete",
+                        "create"
+                    ],
+                    "address": "terraform_data.scratch[0]",
+                    "attribute_changes": {
+                        "triggers_replace": "(null) -> ({})"
+                    }
+                },
+                {
+                    "action": [
+                        "delete",
+                        "create"
+                    ],
+                    "address": "terraform_data.scratch[1]",
+                    "attribute_changes": {
+                        "triggers_replace": "(null) -> ({})"
+                    }
                 }
             ]
         }
