@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+var buffer bytes.Buffer
+var jsonEnc = json.NewEncoder(&buffer)
 
 // WorkspaceDetail for -detail flag with list
 type WorkspaceDetail struct {
@@ -61,6 +65,7 @@ var workspaceGetCmd = &cobra.Command{
 		idList := strings.Split(ids, ",")
 
 		var workspaceList []WorkspaceDetail
+		var workspaceListJson []byte
 
 		// Get workspace
 		for _, id := range idList {
@@ -70,7 +75,10 @@ var workspaceGetCmd = &cobra.Command{
 			workspaceList = append(workspaceList, workspace)
 		}
 
-		workspaceListJson, _ := json.MarshalIndent(workspaceList, "", "  ")
+		err = jsonEnc.Encode(workspaceList)
+		check(err)
+		workspaceListJson = buffer.Bytes()
+
 		if query != "" {
 			outputJsonStr, err := resources.JqRun(workspaceListJson, query)
 			check(err)
@@ -127,7 +135,10 @@ var workspaceListCmd = &cobra.Command{
 
 				workspaceList = append(workspaceList, tmpWorkspace)
 			}
-			workspaceJson, _ = json.MarshalIndent(workspaceList, "", "  ")
+
+			err = jsonEnc.Encode(workspaceList)
+			check(err)
+			workspaceJson = buffer.Bytes()
 
 		} else {
 
@@ -178,7 +189,9 @@ var workspaceListCmd = &cobra.Command{
 				workspaceList = append(workspaceList, comm)
 			}
 
-			workspaceJson, _ = json.MarshalIndent(workspaceList, "", "  ")
+			err = jsonEnc.Encode(workspaceList)
+			check(err)
+			workspaceJson = buffer.Bytes()
 		}
 
 		if query != "" {
@@ -242,7 +255,6 @@ var workspaceLockCmd = &cobra.Command{
 		}
 
 		reason, _ := cmd.Flags().GetString("reason")
-		// Parse JMESPath query from CLI
 		query, _ := cmd.Flags().GetString("query")
 
 		var lockedWorkspaceList []WorkspaceLock
@@ -430,6 +442,9 @@ var workspaceUnlockCmd = &cobra.Command{
 }
 
 func init() {
+	jsonEnc.SetEscapeHTML(false)
+	jsonEnc.SetIndent("", "  ")
+
 	rootCmd.AddCommand(workspaceCmd)
 
 	// List sub-command
