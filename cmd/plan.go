@@ -21,7 +21,7 @@ type Plan struct {
 	ResourceChanges           int    `json:"resource_changes"`
 	ResourceDestructions      int    `json:"resource_destructions"`
 	ResourceImports           int    `json:"resource_imports"`
-	ChangedResourceProperties []any  `json:"changed_resource_properties"`
+	ChangedResourceProperties any    `json:"changed_resource_properties"`
 }
 
 var planCmd = &cobra.Command{
@@ -97,26 +97,55 @@ func showPlan(client *tfe.Client, planID string, detailedChanges bool) (Plan, er
 	if string(pl.Status) == "finished" && detailedChanges {
 		planJsonOut, err := client.Plans.ReadJSONOutput(context.Background(), planID)
 		check(err)
-		// Generate Query string
 		// This query parses the Output JSON and extracts the resources that are changing
-		// <address_of_changing_resource>: {
-		//    <attribute.0>: <current_value> -> <planned_value>,
-		//    <attribute.1>: <current_value> -> <planned_value>,
+		// {
+		//    "action": [ "create", "update", "delete" ],
+		//    "address": <address_of_changing_resource>",
+		//    "attribute_changes": {
+		//      <attribute.0>: <current_value> -> <planned_value>,
+		//      <attribute.1>: <current_value> -> <planned_value>
+		//    }
 		// }
-		queryChangeString := `.resource_changes[]
-    | select(.change.actions | inside(["create", "read", "update", "delete"]))
-    | {
-      (.address): (
-        if .change.after == null then
-          "Resource will be destroyed"
+		queryChangeString := `
+  .resource_changes[]
+  | select(.change.actions | inside(["create", "update", "delete", "replace"]))
+  |
+    {
+      address: .address,
+      action: .change.actions,
+      attribute_changes: (
+        if .change.before != null and .change.after != null then
+          # Object is being updated
+          (.change.before | to_entries) as $before_entries |
+          (.change.after | to_entries) as $after_entries |
+          reduce $before_entries[] as $item ({};
+            # Compare attribute changes between the change.before and change.after map 
+            # for the given resource
+            # TODO: Extend to include new attributes created in change.after map
+            if $item.value != ($after_entries[] | select(.key == $item.key) | .value) then
+              . + {($item.key): "(\($item.value)) -> (\($after_entries[] | select(.key == $item.key) | .value))"}
+            else
+              .
+            end
+          )
+        elif .change.before == null then
+          # Object is being created
+          (.change.after | to_entries) as $after_entries |
+          reduce $after_entries[] as $item ({};
+            . + {($item.key): "null -> \($item.value)"}
+          )
+        elif .change.after == null then
+          # Object is being destroyed
+          (.change.before | to_entries) as $before_entries |
+          reduce $before_entries[] as $item ({};
+            . + {($item.key): "null -> \($item.value)"}
+          )
         else
-          .change.after
-          | with_entries(select(.value != .before))
-          | with_entries(.value = "\(.before) -> \(.value)")
+          {}
         end
-        )
-      }
-    `
+      )
+    }
+`
 		out, err := resources.JqRun(planJsonOut, queryChangeString)
 		check(err)
 
