@@ -423,7 +423,7 @@ func listVariables(client *tfe.Client, workspace WorkspaceLite) (WorkspaceVars, 
 			Variables:     tmpVarList,
 		}
 
-		if varList.Pagination.NextPage == 0 {
+		if varList.NextPage == 0 {
 			break
 		}
 

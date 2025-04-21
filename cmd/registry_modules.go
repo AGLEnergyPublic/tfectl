@@ -81,11 +81,14 @@ func listPrivateModules(client *tfe.Client, organization string) ([]RegistryModu
 		}
 
 		for _, rmItem := range rms.Items {
+			log.Debugf("Processing Module %s", rmItem.Name)
 			result.RegistryName = rmItem.RegistryName
 			result.ID = rmItem.ID
 			result.Name = rmItem.Name
 			result.Namespace = rmItem.Namespace
-			result.VCSRepo = rmItem.VCSRepo.DisplayIdentifier
+			if rmItem.VCSRepo != nil {
+				result.VCSRepo = rmItem.VCSRepo.DisplayIdentifier
+			}
 			result.PublishingMechanism = rmItem.PublishingMechanism
 			result.Provider = rmItem.Provider
 			result.Status = rmItem.Status

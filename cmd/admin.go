@@ -165,7 +165,7 @@ func listAdminRuns(client *tfe.Client, filter string) ([]*tfe.AdminRun, error) {
 		}
 		results = append(results, r.Items...)
 
-		if r.Pagination.NextPage == 0 {
+		if r.NextPage == 0 {
 			break
 		}
 
