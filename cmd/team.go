@@ -181,7 +181,7 @@ func listTeams(client *tfe.Client, organization string, filters []string) ([]*tf
 		t, err := client.Teams.List(context.Background(), organization, options)
 		check(err)
 
-		log.Debugf("%v", t.Pagination.TotalPages)
+		log.Debugf("%v", t.TotalPages)
 		log.Debugf("%v", t.NextPage)
 
 		results = append(results, t.Items...)
