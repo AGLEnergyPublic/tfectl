@@ -103,7 +103,7 @@ func listPolicies(client *tfe.Client, organization string, filter string) ([]*tf
 		}
 		results = append(results, p.Items...)
 
-		if p.Pagination.NextPage == 0 {
+		if p.NextPage == 0 {
 			break
 		}
 

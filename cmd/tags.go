@@ -45,7 +45,14 @@ var tagListCmd = &cobra.Command{
 		for _, tag := range tags {
 			var tmpTag Tag
 			log.Debugf("Processing tag: %s - %s", tag.Name, tag.ID)
-			entry := fmt.Sprintf(`{"name":"%s","id":"%s","instance_count":%d}`, tag.Name, tag.ID, tag.InstanceCount)
+			entry := fmt.Sprintf(`{
+        "name":"%s",
+        "id":"%s",
+        "instance_count":%d
+      }`,
+				tag.Name,
+				tag.ID,
+				tag.InstanceCount)
 			err := json.Unmarshal([]byte(entry), &tmpTag)
 			check(err)
 
@@ -94,7 +101,7 @@ func listTags(client *tfe.Client, organization string, filter string, search str
 		}
 		results = append(results, p.Items...)
 
-		if p.Pagination.NextPage == 0 {
+		if p.NextPage == 0 {
 			break
 		}
 

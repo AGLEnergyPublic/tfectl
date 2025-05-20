@@ -19,6 +19,7 @@
     admin        Manage TFE admin operations
     completion   Generate the autocompletion script for the specified shell
     help         Help about any command
+    plan         Query TFE Plans
     policy       Query TFE policies
     policy-check Manage policy check workflows of a TFE run
     policy-set   Query TFE policy sets
@@ -258,6 +259,7 @@ Use "tfectl [command] --help" for more information about a command.
             "status": "policy_checked",
             "workspace_id": "ws-NMH66XMnUeF8duTx",
             "workspace_name": "tfc-infra-workspace",
+            "created_at": "2024-09-24T06:12:56Z",
             "run_duration": "54.476822"
         }
     ]
@@ -274,6 +276,7 @@ Use "tfectl [command] --help" for more information about a command.
         "workspace_id": "ws-DpeRu7KpazXEWKoJ",
         "workspace_name": "workspace-sandbox",
         "status": "pending",
+        "created_at": "2024-09-24T06:12:56Z",
         "run_duration": "NA"
       }
     ]
@@ -290,6 +293,7 @@ Use "tfectl [command] --help" for more information about a command.
         "workspace_id": "ws-N2qoyJxF1TkfeRYy",
         "workspace_name": "test-workspace-2",
         "status": "applying",
+        "created_at": "2024-09-24T06:12:56Z",
         "run_duration": "NA"
       }
     ]
@@ -306,6 +310,7 @@ Use "tfectl [command] --help" for more information about a command.
         "workspace_id": "ws-N2qoyJxF1TkfeRYy",
         "workspace_name": "test-workspace-2",
         "status": "applied",
+        "created_at": "2024-09-24T06:12:56Z",
         "run_duration": "180.452271"
       }
     ]
@@ -514,6 +519,88 @@ Use "tfectl [command] --help" for more information about a command.
   ```
 </details>
 
+### Plan
+<details>
+    <summary>Query plan summary</summary>
+
+* Query plan summary in TFE/TFC
+
+* #### Show
+  ```bash
+    $ tfectl plan show --ids plan-CRetbA3L01BsxeLq
+    [
+        {
+            "id": "plan-CRetbA3L01BsxeLq",
+            "has_changes": true,
+            "status": "finished",
+            "resource_additions": 2,
+            "resource_changes": 0,
+            "resource_destructions": 0,
+            "resource_imports": 0,
+            "changed_resource_properties": null
+        }
+    ]
+  ```
+
+* #### Show plan details (`--detailed-changes` flag)
+  ```bash
+    $ tfectl plan show --ids plan-v6Li1Qvx3hbaKmGi --detailed-changes
+    [
+        {
+            "id": "plan-v6Li1Qvx3hbaKmGi",
+            "has_changes": true,
+            "status": "finished",
+            "resource_additions": 3,
+            "resource_changes": 0,
+            "resource_destructions": 2,
+            "resource_imports": 0,
+            "changed_resource_properties": [
+                {
+                    "action": [
+                        "create"
+                    ],
+                    "address": "random_password.this",
+                    "attribute_changes": {
+                        "keepers": "null -> null",
+                        "length": "null -> 12",
+                        "lower": "null -> true",
+                        "min_lower": "null -> 0",
+                        "min_numeric": "null -> 0",
+                        "min_special": "null -> 0",
+                        "min_upper": "null -> 0",
+                        "number": "null -> true",
+                        "numeric": "null -> true",
+                        "override_special": "null -> null",
+                        "special": "null -> true",
+                        "upper": "null -> true"
+                    }
+                },
+                {
+                    "action": [
+                        "delete",
+                        "create"
+                    ],
+                    "address": "terraform_data.scratch[0]",
+                    "attribute_changes": {
+                        "triggers_replace": "(null) -> ({})"
+                    }
+                },
+                {
+                    "action": [
+                        "delete",
+                        "create"
+                    ],
+                    "address": "terraform_data.scratch[1]",
+                    "attribute_changes": {
+                        "triggers_replace": "(null) -> ({})"
+                    }
+                }
+            ]
+        }
+    ]
+  ```
+</details>
+
 ### Policy
 <details>
     <summary>Policy Operations</summary>
@@ -674,6 +761,38 @@ Use "tfectl [command] --help" for more information about a command.
             "name": "policy-set-02/iaas-allowed-vm-skus"
         }
     ]
+  ```
+* #### 2. Override
+  * Where applicable, overrides policy checks with a given PolicyCheckID
+  ```bash
+  $ tfectl policy-check override --policy-check-id polchk-s6moSXCk5e7dm1oR
+  {
+      "id": "polchk-s6moSXCk5e7dm1oR",
+      "result": {
+          "advisory_failed": 0,
+          "hard_failed": 0,
+          "passed": 0,
+          "result": false,
+          "soft_failed": 1,
+          "total_failed": 1,
+          "sentinel": {
+              "data": {
+                  "": {
+                      "duration": 0,
+                      "error": null,
+                      "policies": [
+                      # OUTPUT TRUNCATED
+                      ],
+                      "result": false,
+                      "warnings": null
+                  }
+              },
+              "schema-version": 1
+          }
+      },
+      "status": "overridden", # OVERRIDDEN
+      "scope": "organization"
+  }
   ```
 </details>
 

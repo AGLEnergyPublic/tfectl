@@ -15,13 +15,15 @@ var rootCmd = &cobra.Command{
 	Use:               "tfectl",
 	Short:             "Query TFE and TFC from the command line.",
 	Long:              `Query TFE and TFC from the command line.`,
-	Version:           "v1.6.0",
+	Version:           "v1.7.0",
 	PersistentPreRunE: RunRootCmd,
 }
 
 func RunRootCmd(cmd *cobra.Command, args []string) error {
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true
+	cmd.SetOut(os.Stdout)
+
 	if err := setUpLogs(l); err != nil {
 		return err
 	}

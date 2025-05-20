@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/AGLEnergyPublic/tfectl/resources"
 	tfe "github.com/hashicorp/go-tfe"
@@ -18,8 +19,9 @@ type Run struct {
 	WorkspaceID   string `json:"workspace_id"`
 	WorkspaceName string `json:"workspace_name"`
 	Status        string `json:"status"`
+	CreatedAt     string `json:"created_at"`
 	RunDuration   string `json:"run_duration"`
-	//HasChanges    bool `json:"has_changes"`
+	PlanID        string `json:"plan_id"`
 }
 
 var runCmd = &cobra.Command{
@@ -77,13 +79,17 @@ var runListCmd = &cobra.Command{
         "workspace_id":"%s",
         "workspace_name":"%s",
         "status":"%s",
-        "run_duration":"%s"
+        "created_at": "%s",
+        "run_duration":"%s",
+        "plan_id": "%s"
       }`,
 				run.ID,
 				workspaceID,
 				workspaceName,
 				run.Status,
-				runDuration)
+				run.CreatedAt.Format(time.RFC3339),
+				runDuration,
+				run.Plan.ID)
 
 			err := json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -155,12 +161,16 @@ var runQueueCmd = &cobra.Command{
         "workspace_id":"%s",
         "workspace_name":"%s",
         "status":"%s",
-        "run_duration":"NA"
+        "created_at": "%s",
+        "run_duration":"NA",
+        "plan_id": "%s"
       }`,
 				run.ID,
 				run.Workspace.ID,
 				workspace.Name,
-				run.Status)
+				run.Status,
+				run.CreatedAt.Format(time.RFC3339),
+				run.Plan.ID)
 
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
@@ -213,12 +223,16 @@ var runApplyCmd = &cobra.Command{
         "workspace_id":"%s",
         "workspace_name":"%s",
         "status":"%s",
-        "run_duration":"NA"
+        "created_at": "%s",
+        "run_duration":"NA",
+        "plan_id": "%s"
       }`,
 				id,
 				workspaceID,
 				workspaceName,
-				"applying")
+				"applying",
+				run.CreatedAt.Format(time.RFC3339),
+				run.Plan.ID)
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 			runApplyList = append(runApplyList, tmpRun)
@@ -274,7 +288,22 @@ var runGetCmd = &cobra.Command{
 				runDuration = fmt.Sprintf("%f", run.StatusTimestamps.PolicyCheckedAt.Sub(run.CreatedAt).Seconds())
 			}
 
-			entry := fmt.Sprintf(`{"id":"%s","workspace_id":"%s","workspace_name":"%s","status":"%s","run_duration":"%s"}`, run.ID, workspaceID, workspaceName, run.Status, runDuration)
+			entry := fmt.Sprintf(`{
+        "id":"%s",
+        "workspace_id":"%s",
+        "workspace_name":"%s",
+        "status":"%s",
+        "created_at": "%s",
+        "run_duration":"%s",
+        "plan_id": "%s"
+      }`,
+				run.ID,
+				workspaceID,
+				workspaceName,
+				run.Status,
+				run.CreatedAt.Format(time.RFC3339),
+				runDuration,
+				run.Plan.ID)
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -355,12 +384,14 @@ var runCancelCmd = &cobra.Command{
         "workspace_id":"%s",
         "workspace_name":"%s",
         "status":"%s",
+        "created_at": "%s",
         "run_duration":"NA"
       }`,
 				id,
 				workspaceID,
 				workspaceName,
-				"cancelling")
+				"cancelling",
+				run.CreatedAt.Format(time.RFC3339))
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
@@ -436,12 +467,14 @@ var runDiscardCmd = &cobra.Command{
         "workspace_id":"%s",
         "workspace_name":"%s",
         "status":"%s",
+        "created_at": "%s",
         "run_duration":"NA"
       }`,
 				id,
 				workspaceID,
 				workspaceName,
-				"discarding")
+				"discarding",
+				run.CreatedAt.Format(time.RFC3339))
 			err = json.Unmarshal([]byte(entry), &tmpRun)
 			check(err)
 
