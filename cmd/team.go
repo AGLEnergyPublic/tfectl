@@ -181,13 +181,13 @@ func listTeams(client *tfe.Client, organization string, filters []string) ([]*tf
 		t, err := client.Teams.List(context.Background(), organization, options)
 		check(err)
 
-		log.Debugf("%v", t.Pagination.TotalPages)
-		log.Debugf("%v", t.Pagination.NextPage)
+		log.Debugf("%v", t.TotalPages)
+		log.Debugf("%v", t.NextPage)
 
 		results = append(results, t.Items...)
 
 		// Check if there is another page to retrieve.
-		if t.Pagination.NextPage == 0 {
+		if t.NextPage == 0 {
 			break
 		}
 
