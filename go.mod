@@ -7,7 +7,7 @@ require (
 	github.com/itchyny/gojq v0.12.16
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
