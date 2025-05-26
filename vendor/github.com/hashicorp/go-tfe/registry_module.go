@@ -22,7 +22,7 @@ var _ RegistryModules = (*registryModules)(nil)
 //
 // TFE API docs: https://developer.hashicorp.com/terraform/cloud-docs/api-docs/private-registry/modules
 type RegistryModules interface {
-	// List all the registory modules within an organization
+	// List all the registry modules within an organization
 	List(ctx context.Context, organization string, options *RegistryModuleListOptions) (*RegistryModuleList, error)
 
 	// ListCommits List the commits for the registry module
@@ -44,6 +44,12 @@ type RegistryModules interface {
 
 	// ReadVersion Read a registry module version
 	ReadVersion(ctx context.Context, moduleID RegistryModuleID, version string) (*RegistryModuleVersion, error)
+
+	// ReadTerraformRegistryModule Reads a registry module from the Terraform
+	// Registry, as opposed to Read or ReadVersion which read from the private
+	// registry of a Terraform organization.
+	// https://developer.hashicorp.com/terraform/enterprise/api-docs/private-registry/modules#hcp-terraform-registry-implementation
+	ReadTerraformRegistryModule(ctx context.Context, moduleID RegistryModuleID, version string) (*TerraformRegistryModule, error)
 
 	// Delete a registry module
 	// Warning: This method is deprecated and will be removed from a future version of go-tfe. Use DeleteByName instead.
@@ -68,6 +74,62 @@ type RegistryModules interface {
 
 	// Upload a tar gzip archive to the specified configuration version upload URL.
 	UploadTarGzip(ctx context.Context, url string, r io.Reader) error
+}
+
+// TerraformRegistryModule contains data about a module from the Terraform Registry.
+type TerraformRegistryModule struct {
+	ID              string   `json:"id"`
+	Owner           string   `json:"owner"`
+	Namespace       string   `json:"namespace"`
+	Name            string   `json:"name"`
+	Version         string   `json:"version"`
+	Provider        string   `json:"provider"`
+	ProviderLogoURL string   `json:"provider_logo_url"`
+	Description     string   `json:"description"`
+	Source          string   `json:"source"`
+	Tag             string   `json:"tag"`
+	PublishedAt     string   `json:"published_at"`
+	Downloads       int      `json:"downloads"`
+	Verified        bool     `json:"verified"`
+	Root            Root     `json:"root"`
+	Providers       []string `json:"providers"`
+	Versions        []string `json:"versions"`
+}
+
+type Root struct {
+	Path                 string               `json:"path"`
+	Name                 string               `json:"name"`
+	Readme               string               `json:"readme"`
+	Empty                bool                 `json:"empty"`
+	Inputs               []Input              `json:"inputs"`
+	Outputs              []Output             `json:"outputs"`
+	ProviderDependencies []ProviderDependency `json:"provider_dependencies"`
+	Resources            []Resource           `json:"resources"`
+}
+
+type Input struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	Default     string `json:"default"`
+	Required    bool   `json:"required"`
+}
+
+type Output struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type ProviderDependency struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Source    string `json:"source"`
+	Version   string `json:"version"`
+}
+
+type Resource struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 // registryModules implements RegistryModules.
@@ -109,7 +171,10 @@ const (
 
 // RegistryModuleID represents the set of IDs that identify a RegistryModule
 // Use NewPublicRegistryModuleID or NewPrivateRegistryModuleID to build one
+
 type RegistryModuleID struct {
+	// The unique ID of the module. If given, the other fields are ignored.
+	ID string
 	// The organization the module belongs to, see RegistryModule.Organization.Name
 	Organization string
 	// The name of the module, see RegistryModule.Name
@@ -154,6 +219,8 @@ type RegistryModule struct {
 
 	// Relations
 	Organization *Organization `jsonapi:"relation,organization"`
+
+	RegistryNoCodeModule []*RegistryNoCodeModule `jsonapi:"relation,no-code-modules"`
 }
 
 // Commit represents a commit
@@ -199,7 +266,14 @@ type RegistryModuleVersionStatuses struct {
 // RegistryModuleListOptions represents the options for listing registry modules.
 type RegistryModuleListOptions struct {
 	ListOptions
+
+	// Include is a list of relations to include.
+	Include []RegistryModuleListIncludeOpt `url:"include,omitempty"`
 }
+
+type RegistryModuleListIncludeOpt string
+
+const IncludeNoCodeModules RegistryModuleListIncludeOpt = "no-code-modules"
 
 // RegistryModuleCreateOptions is used when creating a registry module without a VCS repo
 type RegistryModuleCreateOptions struct {
@@ -308,7 +382,7 @@ type RegistryModuleVCSRepoUpdateOptions struct {
 	Tags   *bool   `json:"tags,omitempty"`
 }
 
-// List all the registory modules within an organization.
+// List all the registry modules within an organization.
 func (r *registryModules) List(ctx context.Context, organization string, options *RegistryModuleListOptions) (*RegistryModuleList, error) {
 	if !validStringID(&organization) {
 		return nil, ErrInvalidOrg
@@ -523,24 +597,29 @@ func (r *registryModules) Read(ctx context.Context, moduleID RegistryModuleID) (
 		return nil, err
 	}
 
-	if moduleID.RegistryName == "" {
-		log.Println("[WARN] Support for using the RegistryModuleID without RegistryName is deprecated as of release 1.5.0 and may be removed in a future version. The preferred method is to include the RegistryName in RegistryModuleID.")
-		moduleID.RegistryName = PrivateRegistry
-	}
+	var u string
+	if moduleID.ID == "" {
+		if moduleID.RegistryName == "" {
+			log.Println("[WARN] Support for using the RegistryModuleID without RegistryName is deprecated as of release 1.5.0 and may be removed in a future version. The preferred method is to include the RegistryName in RegistryModuleID.")
+			moduleID.RegistryName = PrivateRegistry
+		}
 
-	if moduleID.RegistryName == PrivateRegistry && strings.TrimSpace(moduleID.Namespace) == "" {
-		log.Println("[WARN] Support for using the RegistryModuleID without Namespace is deprecated as of release 1.5.0 and may be removed in a future version. The preferred method is to include the Namespace in RegistryModuleID.")
-		moduleID.Namespace = moduleID.Organization
-	}
+		if moduleID.RegistryName == PrivateRegistry && strings.TrimSpace(moduleID.Namespace) == "" {
+			log.Println("[WARN] Support for using the RegistryModuleID without Namespace is deprecated as of release 1.5.0 and may be removed in a future version. The preferred method is to include the Namespace in RegistryModuleID.")
+			moduleID.Namespace = moduleID.Organization
+		}
 
-	u := fmt.Sprintf(
-		"organizations/%s/registry-modules/%s/%s/%s/%s",
-		url.PathEscape(moduleID.Organization),
-		url.PathEscape(string(moduleID.RegistryName)),
-		url.PathEscape(moduleID.Namespace),
-		url.PathEscape(moduleID.Name),
-		url.PathEscape(moduleID.Provider),
-	)
+		u = fmt.Sprintf(
+			"organizations/%s/registry-modules/%s/%s/%s/%s",
+			url.PathEscape(moduleID.Organization),
+			url.PathEscape(string(moduleID.RegistryName)),
+			url.PathEscape(moduleID.Namespace),
+			url.PathEscape(moduleID.Name),
+			url.PathEscape(moduleID.Provider),
+		)
+	} else {
+		u = fmt.Sprintf("registry-modules/%s", url.PathEscape(moduleID.ID))
+	}
 
 	req, err := r.client.NewRequest("GET", u, nil)
 	if err != nil {
@@ -555,6 +634,38 @@ func (r *registryModules) Read(ctx context.Context, moduleID RegistryModuleID) (
 
 	return rm, nil
 }
+
+// ReadRegistry fetches a registry module from the Terraform Registry.
+func (r *registryModules) ReadTerraformRegistryModule(ctx context.Context, moduleID RegistryModuleID, version string) (*TerraformRegistryModule, error) {
+	u := fmt.Sprintf(
+		"https://app.terraform.io/api/registry/v1/modules/%s/%s/%s/%s",
+		moduleID.Namespace,
+		moduleID.Name,
+		moduleID.Provider,
+		version,
+	)
+	if moduleID.RegistryName == PublicRegistry {
+		u = fmt.Sprintf(
+			"https://app.terraform.io/api/registry/public/v1/modules/%s/%s/%s/%s",
+			moduleID.Namespace,
+			moduleID.Name,
+			moduleID.Provider,
+			version,
+		)
+	}
+	req, err := r.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	trm := &TerraformRegistryModule{}
+	err = req.DoJSON(ctx, trm)
+	if err != nil {
+		return nil, err
+	}
+	return trm, nil
+}
+
 func (r *registryModules) ReadVersion(ctx context.Context, moduleID RegistryModuleID, version string) (*RegistryModuleVersion, error) {
 	if err := moduleID.valid(); err != nil {
 		return nil, err
@@ -690,6 +801,10 @@ func (r *registryModules) DeleteVersion(ctx context.Context, moduleID RegistryMo
 }
 
 func (o RegistryModuleID) valid() error {
+	if validString(&o.ID) && validStringID(&o.ID) {
+		return nil
+	}
+
 	if !validStringID(&o.Organization) {
 		return ErrInvalidOrg
 	}
