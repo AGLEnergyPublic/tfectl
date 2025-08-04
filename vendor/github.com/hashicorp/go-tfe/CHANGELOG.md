@@ -1,4 +1,211 @@
-# UNRELEASED
+# Unreleased
+
+# v1.88.0
+
+## Enhancements
+
+* Adds BETA support for reading, testing and updating Organization Audit Configuration by @glennsarti-hashi [#1151](https://github.com/hashicorp/go-tfe/pull/1151)
+* Adds `Completed` status to `StackConfiguration` by @hwatkins05-hashicorp [#1163](https://github.com/hashicorp/go-tfe/pull/1163)
+
+# v1.87.0
+
+## Bug Fixes
+
+* Fixes incorrect primary key usage on `StackDeploymentRun`, `StackDeploymentGroup`, and `StackDeploymentStep`, by @Maed223 [#1156](https://github.com/hashicorp/go-tfe/pull/1156)
+
+## Enhancements
+
+* Updates endpoint for updating stack configuration from `actions/update-configuration` to `fetch-latest-from-vcs` by @hwatkins05-hashicorp [#1157](https://github.com/hashicorp/go-tfe/pull/1157)
+
+# v1.86.0
+
+## Enhancements
+
+* Adds option for `Includes` for `StackDeploymentRuns` Read/List, by @Maed223 [#1152](https://github.com/hashicorp/go-tfe/pull/1152)
+
+# v1.85.0
+
+## Bug Fixes
+
+* Fix the registry URL path used for `ReadTerraformRegistryModule` by @paladin-devops [#1141](https://github.com/hashicorp/go-tfe/pull/1141)
+
+## Enhancements
+
+* Adds support for managing reserved tag keys within a TFE organization, by @ctrombley [#1145](https://github.com/hashicorp/go-tfe/pull/1145)
+
+# v1.84.0
+
+## Enhancements
+
+* Adds BETA support for listing `StackConfigurationList`, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @shwetamurali [#1138](https://github.com/hashicorp/go-tfe/pull/1138)
+* Adds BETA support for approving all plans for a stack deployment run, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @ctrombley [#1136](https://github.com/hashicorp/go-tfe/pull/1136)
+* Adds BETA support for listing and reading `StackDeploymentSteps`, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @ctrombley [#1133](https://github.com/hashicorp/go-tfe/pull/1133)
+* Adds BETA support for approving all plans in `StackDeploymentGroups`, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @hwatkins05-hashicorp [#1137](https://github.com/hashicorp/go-tfe/pull/1137)
+
+## Bug Fixes
+
+* Fix the registry URL path used for `ReadTerraformRegistryModule` by @paladin-devops [#1141](https://github.com/hashicorp/go-tfe/pull/1141)
+
+# v1.83.0
+
+## Enhancements
+
+* Adds BETA support for listing `StackDeploymentRuns`, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @shwetamurali [#1134](https://github.com/hashicorp/go-tfe/pull/1134)
+* Add support for HCP Terraform `/api/v2/workspaces/{external_id}/all-vars` API endpoint to fetch the list of all variables available to a workspace (include inherited variables from varsets) by @debrin-hc [#1105](https://github.com/hashicorp/go-tfe/pull/1105)
+* Adds BETA support for listing `StackDeploymentGroups`, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @hwatkins05-hashicorp [#1128](https://github.com/hashicorp/go-tfe/pull/1128)
+* Adds BETA support for removing/adding VCS backing for a Stack, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @Maed223 [#1131](https://github.com/hashicorp/go-tfe/pull/1131)
+* Adds BETA support for reading a `StackDeploymentGroup`, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @hwatkins05-hashicorp [#1132](https://github.com/hashicorp-go-tfe/pull/1132)
+
+## Enhancements
+
+* Adds `PrivateRunTasks` field to Entitlements by @glennsarti [#944](https://github.com/hashicorp/go-tfe/pull/944)
+* Adds `AgentPool` relationship to options when creating and updating Run Tasks by @glennsarti [#944](https://github.com/hashicorp/go-tfe/pull/944)
+
+# v1.82.0
+
+## Enhancements
+
+* Adds BETA support for speculative runs with `Stacks` resources and removes VCS repo validity check on `Stack` creation, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @hwatkins05-hashicorp [#1119](https://github.com/hashicorp/go-tfe/pull/1119)
+* Adds support for listing team tokens, by @mkam [#1109](https://github.com/hashicorp/go-tfe/pull/1109)
+
+## Bug Fixes
+
+* Fixes hard coded public terraform registry URL for ReadTerraformRegistryModule, by @paladin-devops [#1126](https://github.com/hashicorp/go-tfe/pull/1126)
+
+# v1.81.0
+
+## Enhancements
+* Adds `IngressAttributes` field to `PolicySetVersion` by @jpadrianoGo [#1092](https://github.com/hashicorp/go-tfe/pull/1092)
+* Adds `ConfirmedBy` field to `Run` by @jpadrianoGo [#1110](https://github.com/hashicorp/go-tfe/pull/1110)
+
+# v1.80.0
+
+## Enhancements
+* Adds BETA support for `PolicyPaths` to the `Runs` interface, by sebasslash [#1104](https://github.com/hashicorp/go-tfe/pull/1104)
+
+# v1.79.0
+
+## BREAKING CHANGES
+
+* Updates team token `Description` to be a pointer, allowing for both nil descriptions and empty string descriptions. Team token descriptions and the ability to create multiple team tokens is in BETA, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users, by @mkam [#1088](https://github.com/hashicorp/go-tfe/pull/1088)
+
+## Enhancements
+
+* Adds `AgentPool` field to the OAuthClientUpdateOptions struct, which is used to associate a VCS Provider with an AgentPool for PrivateVCS support  by @jpogran [#1075](https://github.com/hashicorp/go-tfe/pull/1075)
+
+* Add BETA support for use of OPA and Sentinel with Linux arm64 agents, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users @natalie-todd [#1090](https://github.com/hashicorp/go-tfe/pull/1090)
+
+# v1.78.0
+
+## Enhancements
+* Adds `Links` field to `EffectiveTagBindings` to check whether an effective tag binding is inherited, by @sebasslash [#1087](https://github.com/hashicorp/go-tfe/pull/1087)
+
+# v1.77.0
+
+## Enhancements
+
+* Remove `DefaultProject` from `OrganizationUpdateOptions` to prevent updating an organization's default project, by @netramali [#1078](https://github.com/hashicorp/go-tfe/pull/1078)
+* Adds support for creating multiple team tokens by adding `Description` to `TeamTokenCreateOptions`. This provides BETA support, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users, by @mkam [#1083](https://github.com/hashicorp/go-tfe/pull/1083)
+* Adds support for reading and deleting team tokens by ID, by @mkam [#1083](https://github.com/hashicorp/go-tfe/pull/1083)
+
+## BREAKING CHANGES
+
+In the last release, Runs interface method `ListForOrganization` included pagination fields `TotalCount` and `TotalPages`, but these are being removed as this feature approaches general availablity by @brandonc [#1074](https://github.com/hashicorp/go-tfe/pull/1074)
+
+
+# v1.76.0
+
+## Enhancements
+
+* Adds `DefaultProject` to `OrganizationUpdateOptions` to support updating an organization's default project. This provides BETA support, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users, by @mkam [#1056](https://github.com/hashicorp/go-tfe/pull/1056)
+* Adds `ReadTerraformRegistryModule` to support reading a registry module from Terraform Registry's proxied endpoints by @paladin-devops [#1057](https://github.com/hashicorp/go-tfe/pull/1057)
+* Adds a new method `ListForOrganization` to list Runs in an organization by @arybolovlev [#1059](https://github.com/hashicorp/go-tfe/pull/1059)
+
+## Bug fixes
+
+* Adds `ToolVersionArchitecture` to `AdminTerraformVersionUpdateOptions` and `AdminTerraformVersion`. This provides BETA support, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @kelsi-hoyle [#1047](https://github.com/hashicorp/go-tfe/pull/1047)
+
+# v1.75.0
+
+## Enhancements
+
+* Adds `EffectiveTagBindings` relation to projects and workspaces, allowing the relation to be included when listing projects or workspaces by @sebasslash [#1043](https://github.com/hashicorp/go-tfe/pull/1043)
+
+# v1.74.1
+
+## Enhancements
+
+* Add parallelism to create options for TF Test Runs by @dsa0x [1037](https://github.com/hashicorp/go-tfe/pull/1025)
+
+# v1.74.0
+
+## Enhancements
+
+* Add BETA support for adding custom project permission for variable sets `ProjectVariableSetsPermission` by @netramali [21879](https://github.com/hashicorp/atlas/pull/21879)
+
+# v1.73.1
+
+## Bug fixes
+
+* Includes a critical security update in an upstream depdendency `hashicorp/go-slug` @NodyHub [#1025](https://github.com/hashicorp/go-tfe/pull/1025)
+* Fix bug in BETA support for Linux arm64 agents, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users @natalie-todd [#1022](https://github.com/hashicorp/go-tfe/pull/1022)
+
+# v1.73.0
+
+## Enhancements
+
+* Add support for team notification configurations @notchairmk [#1016](https://github.com/hashicorp/go-tfe/pull/1016)
+
+# v1.72.0
+
+## Enhancements
+
+* Add support for project level auto destroy settings @simonxmh [#1011](https://github.com/hashicorp/go-tfe/pull/1011)
+* Add BETA support for Linux arm64 agents, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users @natalie-todd [#1022](https://github.com/hashicorp/go-tfe/pull/1022)
+* Adds support to delete all tag bindings on either a project or workspace by @sebasslash [#1023](https://github.com/hashicorp/go-tfe/pull/1023)
+
+# v1.71.0
+
+## Enhancements
+
+* Add support for listing effective tag bindings for a workspace or project by @brandonc [#996](https://github.com/hashicorp/go-tfe/pull/996)
+* Add support for listing no-code modules by @paladin-devops [#1003](https://github.com/hashicorp/go-tfe/pull/1003)
+
+# v1.70.0
+
+## Enhancements
+
+* Actually adds support for adding/updating key/value tags, which was not unintentionally removed from the last release by @brandonc [#987](https://github.com/hashicorp/go-tfe/pull/987)
+
+# v1.69.0
+
+## Enhancements
+
+* Adds BETA support for a variable set `Parent` relation, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @jbonhag [#992](https://github.com/hashicorp/go-tfe/pull/992)
+* Add support for adding/updating key/value tags by @brandonc [#991](https://github.com/hashicorp/go-tfe/pull/991)
+* Add support for reading a registry module by its unique identifier by @dsa0x [#988](https://github.com/hashicorp/go-tfe/pull/988)
+* Add support for enabling Stacks on an organization by @brandonc [#987](https://github.com/hashicorp/go-tfe/pull/987)
+* Add support for filtering by key/value tags by @brandonc [#987](https://github.com/hashicorp/go-tfe/pull/987)
+* Adds `SpeculativePlanManagementEnabled` field to `Organization` by @lilincmu [#983](https://github.com/hashicorp/go-tfe/pull/983)
+
+# v1.68.0
+
+## Enhancements
+
+* Add support for reading a no-code module's variables by @paladin-devops [#979](https://github.com/hashicorp/go-tfe/pull/979)
+* Add Waypoint entitlements (the `waypoint-actions` and `waypoint-templates-and-addons` attributes) to `Entitlements` by @ignatius-j [#984](https://github.com/hashicorp/go-tfe/pull/984)
+
+# v1.67.1
+
+## Bug Fixes
+
+* Fixes a bug in `NewRequest` that did not allow query parameters to be specified in the first parameter, which broke several methods: `RegistryModules ReadVersion`, `VariableSets UpdateWorkspaces`, and `Workspaces Readme` by @brandonc [#982](https://github.com/hashicorp/go-tfe/pull/982)
+
+# v1.67.0
+
+## Enhancements
+
+* `Workspaces`: The `Unlock` method now returns a `ErrWorkspaceLockedStateVersionStillPending` error if the latest state version upload is still pending within the platform. This is a retryable error. by @brandonc [#978](https://github.com/hashicorp/go-tfe/pull/978)
 
 # v1.66.0
 
@@ -52,6 +259,8 @@
 ## Enhancements
 
 * Adds `AllowMemberTokenManagement` permission to `Team` by @juliannatetreault [#922](https://github.com/hashicorp/go-tfe/pull/922)
+* Adds `PrivateRunTasks` field to Entitlements by @glennsarti [#944](https://github.com/hashicorp/go-tfe/pull/944)
+* Adds `AgentPool` relationship to options when creating and updating Run Tasks by @glennsarti [#944](https://github.com/hashicorp/go-tfe/pull/944)
 
 # v1.61.0
 
@@ -77,6 +286,7 @@
 ## Enhancements
 
 * Adds BETA support for `Stacks` resources, which is EXPERIMENTAL, SUBJECT TO CHANGE, and may not be available to all users by @brandonc. [#920](https://github.com/hashicorp/go-tfe/pull/920)
+* Adds support for managing resources that have HCP IDs by @roncodingenthusiast. [#924](https://github.com/hashicorp/go-tfe/pull/924)
 
 # v1.57.0
 
