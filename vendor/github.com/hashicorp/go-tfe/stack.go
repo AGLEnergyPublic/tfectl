@@ -75,6 +75,14 @@ type StackVCSRepo struct {
 	OAuthTokenID      string `jsonapi:"attr,oauth-token-id,omitempty"`
 }
 
+// StackVCSRepoOptions
+type StackVCSRepoOptions struct {
+	Identifier        string `json:"identifier"`
+	Branch            string `json:"branch,omitempty"`
+	GHAInstallationID string `json:"github-app-installation-id,omitempty"`
+	OAuthTokenID      string `json:"oauth-token-id,omitempty"`
+}
+
 // Stack represents a stack.
 type Stack struct {
 	ID                 string        `jsonapi:"primary,stacks"`
@@ -123,6 +131,10 @@ type StackConfiguration struct {
 	ErrorMessage         *string                             `jsonapi:"attr,error-message"`
 	EventStreamURL       string                              `jsonapi:"attr,event-stream-url"`
 	Diagnostics          []*StackDiagnostic                  `jsonapi:"attr,diags"`
+	CreatedAt            time.Time                           `jsonapi:"attr,created-at,iso8601"`
+	UpdatedAt            time.Time                           `jsonapi:"attr,updated-at,iso8601"`
+
+	Stack *Stack `jsonapi:"relation,stack"`
 }
 
 // StackDeployment represents a stack deployment, specified by configuration
@@ -172,18 +184,18 @@ type StackReadOptions struct {
 // StackCreateOptions represents the options for creating a stack. The project
 // relation is required.
 type StackCreateOptions struct {
-	Type        string        `jsonapi:"primary,stacks"`
-	Name        string        `jsonapi:"attr,name"`
-	Description *string       `jsonapi:"attr,description,omitempty"`
-	VCSRepo     *StackVCSRepo `jsonapi:"attr,vcs-repo"`
-	Project     *Project      `jsonapi:"relation,project"`
+	Type        string               `jsonapi:"primary,stacks"`
+	Name        string               `jsonapi:"attr,name"`
+	Description *string              `jsonapi:"attr,description,omitempty"`
+	VCSRepo     *StackVCSRepoOptions `jsonapi:"attr,vcs-repo"`
+	Project     *Project             `jsonapi:"relation,project"`
 }
 
 // StackUpdateOptions represents the options for updating a stack.
 type StackUpdateOptions struct {
-	Name        *string       `jsonapi:"attr,name,omitempty"`
-	Description *string       `jsonapi:"attr,description,omitempty"`
-	VCSRepo     *StackVCSRepo `jsonapi:"attr,vcs-repo,omitempty"`
+	Name        *string              `jsonapi:"attr,name,omitempty"`
+	Description *string              `jsonapi:"attr,description,omitempty"`
+	VCSRepo     *StackVCSRepoOptions `jsonapi:"attr,vcs-repo"`
 }
 
 // WaitForStatusResult is the data structure that is sent over the channel
@@ -202,9 +214,9 @@ type WaitForStatusResult struct {
 const minimumPollingIntervalMs = 3000
 const maximumPollingIntervalMs = 5000
 
-// UpdateConfiguration updates the configuration of a stack, triggering stack operations
+// UpdateConfiguration fetches the latest configuration of a stack from VCS, triggering stack operations
 func (s *stacks) UpdateConfiguration(ctx context.Context, stackID string) (*Stack, error) {
-	req, err := s.client.NewRequest("POST", fmt.Sprintf("stacks/%s/actions/update-configuration", url.PathEscape(stackID)), nil)
+	req, err := s.client.NewRequest("POST", fmt.Sprintf("stacks/%s/fetch-latest-from-vcs", url.PathEscape(stackID)), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -321,14 +333,6 @@ func (s StackCreateOptions) valid() error {
 
 	if s.Project.ID == "" {
 		return ErrRequiredProject
-	}
-
-	return s.VCSRepo.valid()
-}
-
-func (s StackVCSRepo) valid() error {
-	if s.Identifier == "" {
-		return ErrRequiredVCSRepo
 	}
 
 	return nil

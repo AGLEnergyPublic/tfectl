@@ -69,6 +69,10 @@ var (
 	// ErrWorkspaceLockedByUser is returned when trying to unlock a workspace locked by a user.
 	ErrWorkspaceLockedByUser = errors.New("unable to unlock workspace locked by user")
 
+	// ErrWorkspaceLockedStateVersionStillPending is returned when trying to unlock whose
+	// latest state version is still pending.
+	ErrWorkspaceLockedStateVersionStillPending = errors.New("unable to unlock workspace while state version upload is still pending")
+
 	// ErrWorkspaceStillProcessing is returned when a workspace is still processing state
 	// to determine if it is safe to delete. "conflict" followed by newline is used to
 	// preserve go-tfe version compatibility with the error constructed at runtime before it was
@@ -118,6 +122,8 @@ var (
 	ErrInvalidProjectID = errors.New("invalid value for project ID")
 
 	ErrInvalidPagination = errors.New("invalid value for page size or number")
+
+	ErrInvalidReservedTagKeyID = errors.New("invalid value for reserved tag key ID")
 
 	ErrInvalidRunTaskCategory = errors.New(`category must be "task"`)
 
@@ -232,6 +238,8 @@ var (
 	ErrInvalidAccessToken = errors.New("invalid value for access token")
 
 	ErrInvalidTaskResultsCallbackStatus = fmt.Errorf("invalid value for task result status. Must be either `%s`, `%s`, or `%s`", TaskFailed, TaskPassed, TaskRunning)
+
+	ErrInvalidDescriptionConflict = errors.New("invalid attributes\n\nValidation failed: Description has already been taken")
 )
 
 var (
@@ -269,6 +277,8 @@ var (
 	ErrRequiredM5 = errors.New("MD5 is required")
 
 	ErrRequiredURL = errors.New("url is required")
+
+	ErrRequiredArchsOrURLAndSha = errors.New("valid archs or url and sha are required")
 
 	ErrRequiredAPIURL = errors.New("API URL is required")
 
@@ -378,7 +388,11 @@ var (
 
 	ErrRequiredRegistryModule = errors.New("registry module is required")
 
+	ErrRequiredTagBindings = errors.New("TagBindings are required")
+
 	ErrInvalidTestRunID = errors.New("invalid value for test run id")
+
+	ErrInvalidQueryRunID = errors.New("invalid value for query run id")
 
 	ErrTerraformVersionValidForPlanOnly = errors.New("setting terraform-version is only valid when plan-only is set to true")
 
