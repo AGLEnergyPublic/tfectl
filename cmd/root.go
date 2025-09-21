@@ -42,6 +42,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("organization", "o", "", "terraform organization or set TFE_ORG")
 	rootCmd.PersistentFlags().StringP("token", "t", "", "terraform token or set TFE_TOKEN")
 	rootCmd.PersistentFlags().StringP("query", "q", "", "JQ compatible query to parse JSON output")
+	rootCmd.PersistentFlags().String("output", "json", "Specify output format. Supported values are `json` or `tsv`")
 }
 
 // SetUpLogs sets the log level.

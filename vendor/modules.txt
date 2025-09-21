@@ -33,6 +33,9 @@ github.com/itchyny/gojq
 # github.com/itchyny/timefmt-go v0.1.6
 ## explicit; go 1.20
 github.com/itchyny/timefmt-go
+# github.com/jeremywohl/flatten v1.0.1
+## explicit
+github.com/jeremywohl/flatten
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib

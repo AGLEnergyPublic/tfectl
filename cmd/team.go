@@ -45,6 +45,7 @@ var teamListCmd = &cobra.Command{
 		check(err)
 
 		query, _ := cmd.Flags().GetString("query")
+		output, _ := cmd.Flags().GetString("output")
 
 		// List teams.
 		teams, err := listTeams(client, organization, []string{})
@@ -69,9 +70,21 @@ var teamListCmd = &cobra.Command{
 		if query != "" {
 			outputJsonStr, err := resources.JqRun(teamJson, query)
 			check(err)
-			cmd.Println(string(outputJsonStr))
+			if output == "json" {
+				cmd.Println(string(outputJsonStr))
+			} else {
+				outputTsv, err := resources.ToTsv(outputJsonStr)
+				check(err)
+				cmd.Println(string(outputTsv))
+			}
 		} else {
-			cmd.Println(string(teamJson))
+			if output == "json" {
+				cmd.Println(string(teamJson))
+			} else {
+				outputTsv, err := resources.ToTsv(teamJson)
+				check(err)
+				cmd.Println(string(outputTsv))
+			}
 		}
 
 	},
@@ -98,6 +111,7 @@ var teamGetCmd = &cobra.Command{
 		}
 
 		query, _ := cmd.Flags().GetString("query")
+		output, _ := cmd.Flags().GetString("output")
 
 		var teamJson []byte
 		var teamList []TeamDetail
@@ -134,9 +148,21 @@ var teamGetCmd = &cobra.Command{
 		if query != "" {
 			outputJsonStr, err := resources.JqRun(teamJson, query)
 			check(err)
-			cmd.Println(string(outputJsonStr))
+			if output == "json" {
+				cmd.Println(string(outputJsonStr))
+			} else {
+				outputTsv, err := resources.ToTsv(outputJsonStr)
+				check(err)
+				cmd.Println(string(outputTsv))
+			}
 		} else {
-			cmd.Println(string(teamJson))
+			if output == "json" {
+				cmd.Println(string(teamJson))
+			} else {
+				outputTsv, err := resources.ToTsv(teamJson)
+				check(err)
+				cmd.Println(string(outputTsv))
+			}
 		}
 
 	},

@@ -16,6 +16,7 @@ func JqRun(jsonStr []byte, query string) ([]byte, error) {
 	var buffer bytes.Buffer
 	var jsonEnc = json.NewEncoder(&buffer)
 
+	// Don't URLEncode "~>" and similar strings
 	jsonEnc.SetEscapeHTML(false)
 	jsonEnc.SetIndent("", "  ")
 
