@@ -37,6 +37,7 @@ type Workspace struct {
 	ExecutionMode    string   `json:"execution_mode"`
 	TerraformVersion string   `json:"terraform_version"`
 	Tags             []string `json:"tags"`
+	AgentPoolID      string   `json:"agent_pool_id"`
 }
 
 type WorkspaceLock struct {
@@ -116,18 +117,39 @@ var workspaceListCmd = &cobra.Command{
 				var tmpWorkspace Workspace
 
 				log.Debugf("Processing workspace: %s - %s", workspace.Name, workspace.ID)
-				entry := fmt.Sprintf(`{
+				var entry string
+				if workspace.AgentPool != nil {
+					entry = fmt.Sprintf(`{
+          "name":"%s",
+          "id":"%s",
+          "locked":%v,
+          "execution_mode":"%s",
+          "terraform_version":"%s",
+          "agent_pool_id": "%s"
+        }`,
+						workspace.Name,
+						workspace.ID,
+						workspace.Locked,
+						workspace.ExecutionMode,
+						workspace.TerraformVersion,
+						workspace.AgentPool.ID,
+					)
+				} else {
+					entry = fmt.Sprintf(`{
           "name":"%s",
           "id":"%s",
           "locked":%v,
           "execution_mode":"%s",
           "terraform_version":"%s"
         }`,
-					workspace.Name,
-					workspace.ID,
-					workspace.Locked,
-					workspace.ExecutionMode,
-					workspace.TerraformVersion)
+						workspace.Name,
+						workspace.ID,
+						workspace.Locked,
+						workspace.ExecutionMode,
+						workspace.TerraformVersion,
+					)
+				}
+
 				err := json.Unmarshal([]byte(entry), &tmpWorkspace)
 				check(err)
 
@@ -543,6 +565,7 @@ func getWorkspace(client *tfe.Client, organization string, workspaceID string) (
 	result.Locked = workspaceRead.Locked
 	result.ExecutionMode = workspaceRead.ExecutionMode
 	result.TerraformVersion = workspaceRead.TerraformVersion
+	result.AgentPoolID = workspaceRead.AgentPool.ID
 	result.Tags = workspaceRead.TagNames
 	result.CreatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.CreatedAt).Hours()/24)
 	result.UpdatedDaysAgo = fmt.Sprintf("%f", time.Since(workspaceRead.UpdatedAt).Hours()/24)

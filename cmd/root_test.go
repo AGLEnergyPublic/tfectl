@@ -16,6 +16,7 @@ Usage:
 
 Available Commands:
   admin             Manage TFE admin operations
+  agent-pool        Query TFE/TFC Agent Pools
   completion        Generate the autocompletion script for the specified shell
   help              Help about any command
   plan              Query TFE Plans

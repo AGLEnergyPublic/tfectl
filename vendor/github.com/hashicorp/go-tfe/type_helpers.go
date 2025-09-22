@@ -14,6 +14,10 @@ func Access(v AccessType) *AccessType {
 	return &v
 }
 
+func AgentExecutionModePtr(v AgentExecutionMode) *AgentExecutionMode {
+	return &v
+}
+
 // ProjectAccess returns a pointer to the given team access project type.
 func ProjectAccess(v TeamProjectAccessType) *TeamProjectAccessType {
 	return &v
@@ -26,6 +30,11 @@ func ProjectSettingsPermission(v ProjectSettingsPermissionType) *ProjectSettings
 
 // ProjectTeamsPermission returns a pointer to the given team access project type.
 func ProjectTeamsPermission(v ProjectTeamsPermissionType) *ProjectTeamsPermissionType {
+	return &v
+}
+
+// ProjectVariableSetsPermission returns a pointer to the given team access project type.
+func ProjectVariableSetsPermission(v ProjectVariableSetsPermissionType) *ProjectVariableSetsPermissionType {
 	return &v
 }
 
