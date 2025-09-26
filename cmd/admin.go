@@ -68,6 +68,7 @@ var adminRunListCmd = &cobra.Command{
 		}
 
 		adminRunListJson, _ = json.MarshalIndent(adminRunList, "", "  ")
+
 		if query != "" {
 			outputJsonStr, err := resources.JqRun(adminRunListJson, query)
 			check(err)

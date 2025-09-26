@@ -61,7 +61,6 @@ var workspaceGetCmd = &cobra.Command{
 		check(err)
 
 		ids, _ := cmd.Flags().GetString("ids")
-		query, _ := cmd.Flags().GetString("query")
 		idList := strings.Split(ids, ",")
 
 		var workspaceList []WorkspaceDetail
@@ -79,14 +78,7 @@ var workspaceGetCmd = &cobra.Command{
 		check(err)
 		workspaceListJson = buffer.Bytes()
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(workspaceListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(workspaceListJson))
-		}
-
+		outputData(cmd, workspaceListJson)
 	},
 }
 
@@ -101,7 +93,6 @@ var workspaceListCmd = &cobra.Command{
 
 		detail, _ := cmd.Flags().GetBool("detail")
 		filter, _ := cmd.Flags().GetString("filter")
-		query, _ := cmd.Flags().GetString("query")
 
 		// List workspaces.
 		workspaces, err := listWorkspaces(client, organization, filter)
@@ -194,14 +185,7 @@ var workspaceListCmd = &cobra.Command{
 			workspaceJson = buffer.Bytes()
 		}
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(workspaceJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(workspaceJson))
-		}
-
+		outputData(cmd, workspaceJson)
 	},
 }
 
@@ -215,20 +199,13 @@ var workspaceLockAllCmd = &cobra.Command{
 		check(err)
 
 		reason, _ := cmd.Flags().GetString("reason")
-		query, _ := cmd.Flags().GetString("query")
 
 		var lockedWorkspaceList []WorkspaceLock
 
 		lockedWorkspaceList, _ = lockAllWorkspaces(client, organization, &reason)
 
 		lockedWorkspaceListJson, _ := json.MarshalIndent(lockedWorkspaceList, "", " ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(lockedWorkspaceListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(lockedWorkspaceListJson))
-		}
+		outputData(cmd, lockedWorkspaceListJson)
 	},
 }
 
@@ -255,7 +232,6 @@ var workspaceLockCmd = &cobra.Command{
 		}
 
 		reason, _ := cmd.Flags().GetString("reason")
-		query, _ := cmd.Flags().GetString("query")
 
 		var lockedWorkspaceList []WorkspaceLock
 		var lockedWorkspace WorkspaceLock
@@ -313,13 +289,7 @@ var workspaceLockCmd = &cobra.Command{
 			lockedWorkspaceList = append(lockedWorkspaceList, lockedWorkspace)
 		}
 		lockedWorkspaceListJson, _ := json.MarshalIndent(lockedWorkspaceList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(lockedWorkspaceListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(lockedWorkspaceListJson))
-		}
+		outputData(cmd, lockedWorkspaceListJson)
 	},
 }
 
@@ -332,20 +302,12 @@ var workspaceUnlockAllCmd = &cobra.Command{
 		organization, client, err := resources.Setup(cmd)
 		check(err)
 
-		query, _ := cmd.Flags().GetString("query")
-
 		var unlockedWorkspaceList []WorkspaceLock
 
 		unlockedWorkspaceList, _ = unlockAllWorkspaces(client, organization)
 
 		unlockedWorkspaceListJson, _ := json.MarshalIndent(unlockedWorkspaceList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(unlockedWorkspaceListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(unlockedWorkspaceListJson))
-		}
+		outputData(cmd, unlockedWorkspaceListJson)
 	},
 }
 
@@ -370,9 +332,6 @@ var workspaceUnlockCmd = &cobra.Command{
 		if filter == "" && ids == "" {
 			log.Fatal("please provide one of ids or filter to perform this operation!")
 		}
-
-		// Parse JMESPath query from CLI
-		query, _ := cmd.Flags().GetString("query")
 
 		var unlockedWorkspaceList []WorkspaceLock
 		var unlockedWorkspace WorkspaceLock
@@ -431,13 +390,7 @@ var workspaceUnlockCmd = &cobra.Command{
 			unlockedWorkspaceList = append(unlockedWorkspaceList, unlockedWorkspace)
 		}
 		unlockedWorkspaceListJson, _ := json.MarshalIndent(unlockedWorkspaceList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(unlockedWorkspaceListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(unlockedWorkspaceListJson))
-		}
+		outputData(cmd, unlockedWorkspaceListJson)
 	},
 }
 

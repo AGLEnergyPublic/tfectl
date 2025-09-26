@@ -42,7 +42,6 @@ var policySetListCmd = &cobra.Command{
 		check(err)
 
 		filter, _ := cmd.Flags().GetString("filter")
-		query, _ := cmd.Flags().GetString("query")
 
 		policySets, err := listPolicySets(client, organization, filter)
 		check(err)
@@ -122,13 +121,7 @@ var policySetListCmd = &cobra.Command{
 		}
 		policySetListJson, _ = json.MarshalIndent(policySetList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(policySetListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(policySetListJson))
-		}
+		outputData(cmd, policySetListJson)
 	},
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/AGLEnergyPublic/tfectl/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +43,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("organization", "o", "", "terraform organization or set TFE_ORG")
 	rootCmd.PersistentFlags().StringP("token", "t", "", "terraform token or set TFE_TOKEN")
 	rootCmd.PersistentFlags().StringP("query", "q", "", "JQ compatible query to parse JSON output")
-	rootCmd.PersistentFlags().String("output", "json", "Specify output format. Supported values are `json` or `tsv`")
+	rootCmd.PersistentFlags().String("output", "json", "Specify output format. Supported values are json or tsv")
 }
 
 // SetUpLogs sets the log level.
@@ -73,4 +74,24 @@ func check(err error) {
 	if err != nil {
 		log.Fatalf("Unable to perform operation: %v\n", err)
 	}
+}
+
+func outputData(cmd *cobra.Command, data []byte) {
+	query, _ := cmd.Flags().GetString("query")
+	output, _ := cmd.Flags().GetString("output")
+
+	if query != "" {
+		var err error
+		data, err = resources.JqRun(data, query)
+		check(err)
+	}
+
+	if output == "json" {
+		cmd.Println(string(data))
+		return
+	}
+
+	outputTsv, err := resources.ToTsv(data)
+	check(err)
+	cmd.Println(string(outputTsv))
 }

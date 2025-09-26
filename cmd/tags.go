@@ -33,7 +33,6 @@ var tagListCmd = &cobra.Command{
 		check(err)
 
 		filter, _ := cmd.Flags().GetString("filter")
-		query, _ := cmd.Flags().GetString("query")
 		search, _ := cmd.Flags().GetString("search")
 
 		tags, err := listTags(client, organization, filter, search)
@@ -60,13 +59,7 @@ var tagListCmd = &cobra.Command{
 		}
 		tagListJson, _ = json.MarshalIndent(tagList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(tagListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(tagListJson))
-		}
+		outputData(cmd, tagListJson)
 	},
 }
 

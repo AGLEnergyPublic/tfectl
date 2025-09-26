@@ -72,8 +72,6 @@ var variableListCmd = &cobra.Command{
 			log.Fatal("please provide one of workspace-ids or workspace-filter to perform this operation!")
 		}
 
-		query, _ := cmd.Flags().GetString("query")
-
 		var workspaceList []WorkspaceLite
 		var tmpWorkspace WorkspaceLite
 
@@ -111,13 +109,7 @@ var variableListCmd = &cobra.Command{
 		}
 
 		workspaceVarsListJson, _ = json.MarshalIndent(workspaceVarsList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(workspaceVarsListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(workspaceVarsListJson))
-		}
+		outputData(cmd, workspaceVarsListJson)
 	},
 }
 
@@ -132,7 +124,6 @@ var variableReadCmd = &cobra.Command{
 
 		workspaceID, _ := cmd.Flags().GetString("workspace-id")
 		variableID, _ := cmd.Flags().GetString("variable-id")
-		query, _ := cmd.Flags().GetString("query")
 
 		var tmpWorkspace WorkspaceLite
 
@@ -145,13 +136,7 @@ var variableReadCmd = &cobra.Command{
 		check(err)
 
 		variableJson, _ := json.MarshalIndent(v, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(variableJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(variableJson))
-		}
+		outputData(cmd, variableJson)
 	},
 }
 
@@ -172,7 +157,6 @@ var variableCreateCmd = &cobra.Command{
 		categoryTypeStr, _ := cmd.Flags().GetString("type")
 		hcl, _ := cmd.Flags().GetBool("hcl")
 		sensitive, _ := cmd.Flags().GetBool("sensitive")
-		query, _ := cmd.Flags().GetString("query")
 
 		categoryType := tfe.CategoryType(categoryTypeStr)
 
@@ -180,13 +164,7 @@ var variableCreateCmd = &cobra.Command{
 		check(err)
 
 		variableJson, _ := json.MarshalIndent(v, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(variableJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(variableJson))
-		}
+		outputData(cmd, variableJson)
 	},
 }
 
@@ -201,13 +179,11 @@ var variableCreateFromFileCmd = &cobra.Command{
 		file, _ := cmd.Flags().GetString("file")
 		workspaceID, _ := cmd.Flags().GetString("workspace-id")
 
-		query, _ := cmd.Flags().GetString("query")
-
 		byteVarJson := readJsonFile(file)
 
 		var variables Variables
 		var outputVariablesList []Variable
-		var ouputVariablesListJson []byte
+		var outputVariablesListJson []byte
 
 		err = json.Unmarshal([]byte(byteVarJson), &variables)
 		check(err)
@@ -217,14 +193,8 @@ var variableCreateFromFileCmd = &cobra.Command{
 			check(err)
 			outputVariablesList = append(outputVariablesList, v)
 		}
-		ouputVariablesListJson, _ = json.MarshalIndent(outputVariablesList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(ouputVariablesListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(ouputVariablesListJson))
-		}
+		outputVariablesListJson, _ = json.MarshalIndent(outputVariablesList, "", "  ")
+		outputData(cmd, outputVariablesListJson)
 	},
 }
 
@@ -244,19 +214,12 @@ var variableUpdateCmd = &cobra.Command{
 		description, _ := cmd.Flags().GetString("description")
 		hcl, _ := cmd.Flags().GetBool("hcl")
 		sensitive, _ := cmd.Flags().GetBool("sensitive")
-		query, _ := cmd.Flags().GetString("query")
 
 		v, err := updateVariable(client, workspaceID, variableID, &key, &value, &description, &hcl, &sensitive)
 		check(err)
 
 		variableJson, _ := json.MarshalIndent(v, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(variableJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(variableJson))
-		}
+		outputData(cmd, variableJson)
 	},
 }
 
@@ -271,13 +234,11 @@ var variableUpdateFromFileCmd = &cobra.Command{
 		file, _ := cmd.Flags().GetString("file")
 		workspaceID, _ := cmd.Flags().GetString("workspace-id")
 
-		query, _ := cmd.Flags().GetString("query")
-
 		byteVarJson := readJsonFile(file)
 
 		var variables Variables
 		var outputVariablesList []Variable
-		var ouputVariablesListJson []byte
+		var outputVariablesListJson []byte
 
 		err = json.Unmarshal([]byte(byteVarJson), &variables)
 		check(err)
@@ -287,14 +248,8 @@ var variableUpdateFromFileCmd = &cobra.Command{
 			check(err)
 			outputVariablesList = append(outputVariablesList, v)
 		}
-		ouputVariablesListJson, _ = json.MarshalIndent(outputVariablesList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(ouputVariablesListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(ouputVariablesListJson))
-		}
+		outputVariablesListJson, _ = json.MarshalIndent(outputVariablesList, "", "  ")
+		outputData(cmd, outputVariablesListJson)
 	},
 }
 
@@ -309,7 +264,6 @@ var variableDeleteCmd = &cobra.Command{
 
 		workspaceID, _ := cmd.Flags().GetString("workspace-id")
 		variableID, _ := cmd.Flags().GetString("variable-id")
-		query, _ := cmd.Flags().GetString("query")
 
 		err = deleteVariable(client, workspaceID, variableID)
 		check(err)
@@ -328,13 +282,7 @@ var variableDeleteCmd = &cobra.Command{
 
 		workspaceVarsList = append(workspaceVarsList, w)
 		workspaceVarsListJson, _ = json.MarshalIndent(workspaceVarsList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(workspaceVarsListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(workspaceVarsListJson))
-		}
+		outputData(cmd, workspaceVarsListJson)
 	},
 }
 
