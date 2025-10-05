@@ -129,6 +129,10 @@ type Client struct {
 	AgentTokens                     AgentTokens
 	Applies                         Applies
 	AuditTrails                     AuditTrails
+	AWSOIDCConfigurations           AWSOIDCConfigurations
+	GCPOIDCConfigurations           GCPOIDCConfigurations
+	AzureOIDCConfigurations         AzureOIDCConfigurations
+	VaultOIDCConfigurations         VaultOIDCConfigurations
 	Comments                        Comments
 	ConfigurationVersions           ConfigurationVersions
 	CostEstimates                   CostEstimates
@@ -165,15 +169,15 @@ type Client struct {
 	RunTriggers                     RunTriggers
 	SSHKeys                         SSHKeys
 	Stacks                          Stacks
+	HYOKConfigurations              HYOKConfigurations
+	HYOKCustomerKeyVersions         HYOKCustomerKeyVersions
+	HYOKEncryptedDataKeys           HYOKEncryptedDataKeys
 	StackConfigurations             StackConfigurations
 	StackConfigurationSummaries     StackConfigurationSummaries
-	StackDeployments                StackDeployments
 	StackDeploymentGroups           StackDeploymentGroups
+	StackDeploymentGroupSummaries   StackDeploymentGroupSummaries
 	StackDeploymentRuns             StackDeploymentRuns
 	StackDeploymentSteps            StackDeploymentSteps
-	StackPlans                      StackPlans
-	StackPlanOperations             StackPlanOperations
-	StackSources                    StackSources
 	StateVersionOutputs             StateVersionOutputs
 	StateVersions                   StateVersions
 	TaskResults                     TaskResults
@@ -463,6 +467,10 @@ func NewClient(cfg *Config) (*Client, error) {
 	client.AgentTokens = &agentTokens{client: client}
 	client.Applies = &applies{client: client}
 	client.AuditTrails = &auditTrails{client: client}
+	client.AWSOIDCConfigurations = &awsOIDCConfigurations{client: client}
+	client.GCPOIDCConfigurations = &gcpOIDCConfigurations{client: client}
+	client.AzureOIDCConfigurations = &azureOIDCConfigurations{client: client}
+	client.VaultOIDCConfigurations = &vaultOIDCConfigurations{client: client}
 	client.Comments = &comments{client: client}
 	client.ConfigurationVersions = &configurationVersions{client: client}
 	client.CostEstimates = &costEstimates{client: client}
@@ -500,15 +508,15 @@ func NewClient(cfg *Config) (*Client, error) {
 	client.RunTriggers = &runTriggers{client: client}
 	client.SSHKeys = &sshKeys{client: client}
 	client.Stacks = &stacks{client: client}
+	client.HYOKConfigurations = &hyokConfigurations{client: client}
+	client.HYOKCustomerKeyVersions = &hyokCustomerKeyVersions{client: client}
+	client.HYOKEncryptedDataKeys = &hyokEncryptedDataKeys{client: client}
 	client.StackConfigurations = &stackConfigurations{client: client}
 	client.StackConfigurationSummaries = &stackConfigurationSummaries{client: client}
-	client.StackDeployments = &stackDeployments{client: client}
 	client.StackDeploymentGroups = &stackDeploymentGroups{client: client}
+	client.StackDeploymentGroupSummaries = &stackDeploymentGroupSummaries{client: client}
 	client.StackDeploymentRuns = &stackDeploymentRuns{client: client}
 	client.StackDeploymentSteps = &stackDeploymentSteps{client: client}
-	client.StackPlans = &stackPlans{client: client}
-	client.StackPlanOperations = &stackPlanOperations{client: client}
-	client.StackSources = &stackSources{client: client}
 	client.StateVersionOutputs = &stateVersionOutputs{client: client}
 	client.StateVersions = &stateVersions{client: client}
 	client.TaskResults = &taskResults{client: client}
