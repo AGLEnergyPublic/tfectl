@@ -10,8 +10,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
+	"github.com/hashicorp/go-slug/internal/escapingfs"
 	"github.com/hashicorp/go-slug/internal/ignorefiles"
 	"github.com/hashicorp/go-slug/internal/unpackinfo"
 )
@@ -76,6 +78,9 @@ func DereferenceSymlinks() PackerOption {
 // be expressly permitted, whereas they are forbidden by default. Exercise
 // caution when using this option. A symlink matches path if its target
 // resolves to path exactly, or if path is a parent directory of target.
+//
+// Deprecated: This option is deprecated and will be removed in a future
+// release.
 func AllowSymlinkTarget(path string) PackerOption {
 	return func(p *Packer) error {
 		p.allowSymlinkTargets = append(p.allowSymlinkTargets, path)
@@ -87,7 +92,7 @@ func AllowSymlinkTarget(path string) PackerOption {
 type Packer struct {
 	dereference          bool
 	applyTerraformIgnore bool
-	allowSymlinkTargets  []string
+	allowSymlinkTargets  []string // Deprecated
 }
 
 // NewPacker is a constructor for Packer.
@@ -148,7 +153,7 @@ func (p *Packer) Pack(src string, w io.Writer) (*Meta, error) {
 	}
 
 	// Check if the root (src) is a symlink
-	if info.Mode()&os.ModeSymlink != 0 {
+	if isSymlink(info.Mode()) {
 		src, err = os.Readlink(src)
 		if err != nil {
 			return nil, err
@@ -254,7 +259,7 @@ func (p *Packer) packWalkFn(root, src, dst string, tarW *tar.Writer, meta *Meta,
 			header.Typeflag = tar.TypeReg
 			header.Size = info.Size()
 
-		case fm&os.ModeSymlink != 0:
+		case isSymlink(info.Mode()):
 			// Read the symlink file to find the destination.
 			target, err := os.Readlink(path)
 			if err != nil {
@@ -355,7 +360,7 @@ func (p *Packer) resolveExternalLink(root string, path string) (*externalSymlink
 	}
 
 	// Recurse if the symlink resolves to another symlink
-	if info.Mode()&os.ModeSymlink != 0 {
+	if isSymlink(info.Mode()) {
 		return p.resolveExternalLink(root, absTarget)
 	}
 
@@ -424,11 +429,14 @@ func (p *Packer) Unpack(r io.Reader, dst string) error {
 
 		// Handle symlinks, directories, non-regular files
 		if info.IsSymlink() {
+
 			if ok, err := p.validSymlink(dst, header.Name, header.Linkname); ok {
 				// Create the symlink.
-				if err = os.Symlink(header.Linkname, info.Path); err != nil {
+				headerName := filepath.Clean(header.Name)
+				headerLinkname := filepath.Clean(header.Linkname)
+				if err = os.Symlink(headerLinkname, info.Path); err != nil {
 					return fmt.Errorf("failed creating symlink (%q -> %q): %w",
-						header.Name, header.Linkname, err)
+						headerName, headerLinkname, err)
 				}
 			} else {
 				return err
@@ -504,7 +512,7 @@ func (p *Packer) validSymlink(root, path, target string) (bool, error) {
 	// Get the absolute path to the file path.
 	absPath := path
 	if !filepath.IsAbs(absPath) {
-		absPath = filepath.Join(absRoot, path)
+		absPath = filepath.Clean(filepath.Join(absRoot, path))
 	}
 
 	// Get the absolute path of the symlink target.
@@ -512,11 +520,16 @@ func (p *Packer) validSymlink(root, path, target string) (bool, error) {
 	if filepath.IsAbs(target) {
 		absTarget = filepath.Clean(target)
 	} else {
-		absTarget = filepath.Join(filepath.Dir(absPath), target)
+		absTarget = filepath.Clean(filepath.Join(filepath.Dir(absPath), target))
 	}
 
 	// Target falls within root.
-	if strings.HasPrefix(absTarget, absRoot) {
+	rel, err := escapingfs.TargetWithinRoot(absRoot, absTarget)
+	if err != nil {
+		return false, err
+	}
+
+	if rel {
 		return true, nil
 	}
 
@@ -526,19 +539,23 @@ func (p *Packer) validSymlink(root, path, target string) (bool, error) {
 		if !filepath.IsAbs(prefix) {
 			prefix = filepath.Join(absRoot, prefix)
 		}
+		prefix = filepath.Clean(prefix)
 
 		// Exact match is allowed.
 		if absTarget == prefix {
 			return true, nil
 		}
 
-		// Prefix match of a directory is allowed.
-		if !strings.HasSuffix(prefix, "/") {
-			prefix += "/"
+		// Target falls within root.
+		rel, err := escapingfs.TargetWithinRoot(prefix, absTarget)
+		if err != nil {
+			return false, err
 		}
-		if strings.HasPrefix(absTarget, prefix) {
+
+		if rel {
 			return true, nil
 		}
+
 	}
 
 	return false, &IllegalSlugError{
@@ -559,9 +576,18 @@ func checkFileMode(m os.FileMode) (keep, body bool) {
 	case m.IsRegular():
 		return true, true
 
-	case m&os.ModeSymlink != 0:
+	case isSymlink(m):
 		return true, false
 	}
 
 	return false, false
+}
+
+// isSymlink checks if the provider file mode is a symlink
+// as of Go 1.23 Windows files with linked/mounted modes are considered irregular
+func isSymlink(m os.FileMode) bool {
+	if runtime.GOOS == "windows" {
+		return m&os.ModeSymlink != 0 || m&os.ModeIrregular != 0
+	}
+	return m&os.ModeSymlink != 0
 }
