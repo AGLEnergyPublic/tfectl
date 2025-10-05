@@ -46,7 +46,6 @@ var planShowCmd = &cobra.Command{
 
 		ids, _ := cmd.Flags().GetString("ids")
 		detailedChanges, _ := cmd.Flags().GetBool("detailed-changes")
-		query, _ := cmd.Flags().GetString("query")
 
 		var planShowJson []byte
 		var planShowList []Plan
@@ -63,13 +62,7 @@ var planShowCmd = &cobra.Command{
 		_ = jsonEnc.Encode(planShowList)
 		planShowJson = buffer.Bytes()
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(planShowJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(planShowJson))
-		}
+		outputData(cmd, planShowJson)
 	},
 }
 

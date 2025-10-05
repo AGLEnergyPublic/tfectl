@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"strings"
@@ -26,7 +27,8 @@ func runTestCasesNoOutput(t *testing.T, c *cobra.Command, tt []struct {
 	err  error
 }) {
 	for _, testCase := range tt {
-		_, err := execute(t, c, testCase.args...)
+		out, err := execute(t, c, testCase.args...)
+		fmt.Println(out)
 		require.Nil(t, err)
 	}
 }

@@ -48,20 +48,13 @@ var registryProviderListCmd = &cobra.Command{
 		check(err)
 
 		filter, _ := cmd.Flags().GetString("filter")
-		query, _ := cmd.Flags().GetString("query")
 
 		providerList, err := listPrivateProviders(client, organization, filter)
 		check(err)
 
 		providerListJson, _ := json.MarshalIndent(providerList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(providerListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(providerListJson))
-		}
+		outputData(cmd, providerListJson)
 	},
 }
 
@@ -75,19 +68,12 @@ var registryProviderGetCmd = &cobra.Command{
 		check(err)
 
 		name, _ := cmd.Flags().GetString("name")
-		query, _ := cmd.Flags().GetString("query")
 
 		privateProviderDetail, err := getPrivateProviderDetails(client, organization, name)
 		check(err)
 
 		privateProviderDetailJson, _ := json.MarshalIndent(privateProviderDetail, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(privateProviderDetailJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(privateProviderDetailJson))
-		}
+		outputData(cmd, privateProviderDetailJson)
 	},
 }
 

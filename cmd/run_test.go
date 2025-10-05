@@ -5,29 +5,32 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"regexp"
+	"strings"
 )
 
 func TestRunListCmd(t *testing.T) {
+	buf := new(bytes.Buffer)
+
 	wr := rootCmd
 	wc := workspaceCmd
 	wlc := workspaceListCmd
+
 	wr.AddCommand(wc, wlc)
-
-	wr.SetArgs([]string{"workspace", "list", "--query", ".[0].id"})
-
-	buf := bytes.NewBufferString("")
 	wr.SetOut(buf)
+	wr.SetErr(buf)
+	wr.SetArgs([]string{"workspace", "list", "--query", ".[0].id"})
 
 	err := wr.Execute()
 	if err != nil {
 		t.Fatalf("Error executing command: %v", err)
 	}
 
-	out := buf.String()
+	out := strings.TrimSpace(buf.String())
 
 	re := regexp.MustCompile(`"([^"]*)"`)
 	matches := re.FindStringSubmatch(out)
@@ -51,6 +54,7 @@ func TestRunListCmd(t *testing.T) {
 		rr.SetOut(rbuf)
 
 		err := rr.Execute()
+		fmt.Println(rbuf.String())
 
 		if err != nil {
 			t.Fatalf("Error executing command: %v", err)

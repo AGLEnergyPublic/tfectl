@@ -45,21 +45,13 @@ var policyCheckShowCmd = &cobra.Command{
 		check(err)
 
 		runId, _ := cmd.Flags().GetString("run-id")
-		query, _ := cmd.Flags().GetString("query")
 
 		var policyCheckJson []byte
 
 		policyCheck, _ := showPolicyChecks(client, runId)
 
 		policyCheckJson, _ = json.MarshalIndent(policyCheck, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(policyCheckJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(policyCheckJson))
-		}
-
+		outputData(cmd, policyCheckJson)
 	},
 }
 
@@ -73,21 +65,13 @@ var policyCheckOverrideCmd = &cobra.Command{
 		check(err)
 
 		policyCheckId, _ := cmd.Flags().GetString("policy-check-id")
-		query, _ := cmd.Flags().GetString("query")
 
 		var policyCheckJson []byte
 
 		policyCheck, _ := overridePolicyChecks(client, policyCheckId)
 
 		policyCheckJson, _ = json.MarshalIndent(policyCheck, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(policyCheckJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(policyCheckJson))
-		}
-
+		outputData(cmd, policyCheckJson)
 	},
 }
 

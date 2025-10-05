@@ -42,7 +42,6 @@ var runListCmd = &cobra.Command{
 		workspaceID, _ := cmd.Flags().GetString("workspace-id")
 		status, _ := cmd.Flags().GetString("status")
 		operation, _ := cmd.Flags().GetString("operation")
-		query, _ := cmd.Flags().GetString("query")
 		listAll, _ := cmd.Flags().GetBool("list-all")
 
 		// Get workspaceName by ID
@@ -98,14 +97,7 @@ var runListCmd = &cobra.Command{
 		}
 		runJson, _ = json.MarshalIndent(runList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(runJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(runJson))
-		}
-
+		outputData(cmd, runJson)
 	},
 }
 
@@ -128,8 +120,6 @@ var runQueueCmd = &cobra.Command{
 		if filter == "" && ids == "" {
 			log.Fatal("please provide one of ids or filter to perform this operation!")
 		}
-
-		query, _ := cmd.Flags().GetString("query")
 
 		var runListJson []byte
 		var runList []Run
@@ -179,13 +169,7 @@ var runQueueCmd = &cobra.Command{
 		}
 
 		runListJson, _ = json.MarshalIndent(runList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(runListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(runListJson))
-		}
+		outputData(cmd, runListJson)
 	},
 }
 
@@ -199,7 +183,6 @@ var runApplyCmd = &cobra.Command{
 		check(err)
 
 		ids, _ := cmd.Flags().GetString("ids")
-		query, _ := cmd.Flags().GetString("query")
 
 		var runApplyListJson []byte
 		var runApplyList []Run
@@ -239,13 +222,7 @@ var runApplyCmd = &cobra.Command{
 		}
 
 		runApplyListJson, _ = json.MarshalIndent(runApplyList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(runApplyListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(runApplyListJson))
-		}
+		outputData(cmd, runApplyListJson)
 	},
 }
 
@@ -259,7 +236,6 @@ var runGetCmd = &cobra.Command{
 		check(err)
 
 		ids, _ := cmd.Flags().GetString("ids")
-		query, _ := cmd.Flags().GetString("query")
 
 		var runGetListJson []byte
 		var runGetList []Run
@@ -311,13 +287,7 @@ var runGetCmd = &cobra.Command{
 		}
 
 		runGetListJson, _ = json.MarshalIndent(runGetList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(runGetListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(runGetListJson))
-		}
+		outputData(cmd, runGetListJson)
 	},
 }
 
@@ -342,7 +312,6 @@ var runCancelCmd = &cobra.Command{
 		}
 
 		force, _ := cmd.Flags().GetBool("force")
-		query, _ := cmd.Flags().GetString("query")
 
 		var runCancelListJson []byte
 		var runCancelList []Run
@@ -399,13 +368,7 @@ var runCancelCmd = &cobra.Command{
 		}
 
 		runCancelListJson, _ = json.MarshalIndent(runCancelList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(runCancelListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(runCancelListJson))
-		}
+		outputData(cmd, runCancelListJson)
 	},
 }
 
@@ -428,8 +391,6 @@ var runDiscardCmd = &cobra.Command{
 		if filter == "" && ids == "" {
 			log.Fatal("please provide one of ids or filter to perform this operation!")
 		}
-
-		query, _ := cmd.Flags().GetString("query")
 
 		var runDiscardListJson []byte
 		var runDiscardList []Run
@@ -482,13 +443,7 @@ var runDiscardCmd = &cobra.Command{
 		}
 
 		runDiscardListJson, _ = json.MarshalIndent(runDiscardList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(runDiscardListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(runDiscardListJson))
-		}
+		outputData(cmd, runDiscardListJson)
 	},
 }
 

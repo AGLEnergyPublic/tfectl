@@ -39,20 +39,12 @@ var registryModuleListCmd = &cobra.Command{
 		organization, client, err := resources.Setup(cmd)
 		check(err)
 
-		query, _ := cmd.Flags().GetString("query")
-
 		moduleList, err := listPrivateModules(client, organization)
 		check(err)
 
 		moduleListJson, _ := json.MarshalIndent(moduleList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(moduleListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(moduleListJson))
-		}
+		outputData(cmd, moduleListJson)
 	},
 }
 
