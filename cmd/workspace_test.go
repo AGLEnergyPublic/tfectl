@@ -1,5 +1,5 @@
-//go:build !all || workspace
-// +build !all workspace
+//go:build all
+// +build all
 
 package cmd
 

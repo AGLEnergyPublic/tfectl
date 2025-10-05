@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -53,6 +54,7 @@ func TestRunListCmd(t *testing.T) {
 		rr.SetOut(rbuf)
 
 		err := rr.Execute()
+		fmt.Println(rbuf.String())
 
 		if err != nil {
 			t.Fatalf("Error executing command: %v", err)

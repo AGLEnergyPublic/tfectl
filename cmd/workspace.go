@@ -17,9 +17,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var buffer bytes.Buffer
-var jsonEnc = json.NewEncoder(&buffer)
-
 // WorkspaceDetail for -detail flag with list
 type WorkspaceDetail struct {
 	Workspace
@@ -63,6 +60,11 @@ var workspaceGetCmd = &cobra.Command{
 		ids, _ := cmd.Flags().GetString("ids")
 		idList := strings.Split(ids, ",")
 
+		var buffer bytes.Buffer
+		var jsonEnc = json.NewEncoder(&buffer)
+		jsonEnc.SetEscapeHTML(false)
+		jsonEnc.SetIndent("", "  ")
+
 		var workspaceList []WorkspaceDetail
 		var workspaceListJson []byte
 
@@ -78,6 +80,7 @@ var workspaceGetCmd = &cobra.Command{
 		check(err)
 		workspaceListJson = buffer.Bytes()
 
+		defer buffer.Reset()
 		outputData(cmd, workspaceListJson)
 	},
 }
@@ -90,6 +93,12 @@ var workspaceListCmd = &cobra.Command{
 		// Setup the command.
 		organization, client, err := resources.Setup(cmd)
 		check(err)
+
+		var buffer bytes.Buffer
+		var jsonEnc = json.NewEncoder(&buffer)
+
+		jsonEnc.SetEscapeHTML(false)
+		jsonEnc.SetIndent("", "  ")
 
 		detail, _ := cmd.Flags().GetBool("detail")
 		filter, _ := cmd.Flags().GetString("filter")
@@ -185,6 +194,7 @@ var workspaceListCmd = &cobra.Command{
 			workspaceJson = buffer.Bytes()
 		}
 
+		defer buffer.Reset()
 		outputData(cmd, workspaceJson)
 	},
 }
@@ -395,9 +405,6 @@ var workspaceUnlockCmd = &cobra.Command{
 }
 
 func init() {
-	jsonEnc.SetEscapeHTML(false)
-	jsonEnc.SetIndent("", "  ")
-
 	rootCmd.AddCommand(workspaceCmd)
 
 	// List sub-command
