@@ -35,7 +35,6 @@ var adminRunListCmd = &cobra.Command{
 		check(err)
 
 		filter, _ := cmd.Flags().GetString("filter")
-		query, _ := cmd.Flags().GetString("query")
 
 		var adminRunListJson []byte
 		// struct Run defined in run.go
@@ -69,13 +68,7 @@ var adminRunListCmd = &cobra.Command{
 
 		adminRunListJson, _ = json.MarshalIndent(adminRunList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(adminRunListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(adminRunListJson))
-		}
+		outputData(cmd, adminRunListJson)
 	},
 }
 
@@ -88,7 +81,6 @@ var adminRunForceCancelCmd = &cobra.Command{
 		check(err)
 
 		ids, _ := cmd.Flags().GetString("ids")
-		query, _ := cmd.Flags().GetString("query")
 
 		idList := strings.Split(ids, ",")
 
@@ -123,13 +115,7 @@ var adminRunForceCancelCmd = &cobra.Command{
 			adminRunForceCancelList = append(adminRunForceCancelList, tmpRun)
 		}
 		adminRunForceCancelListJson, _ = json.MarshalIndent(adminRunForceCancelList, "", "  ")
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(adminRunForceCancelListJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(adminRunForceCancelListJson))
-		}
+		outputData(cmd, adminRunForceCancelListJson)
 	},
 }
 

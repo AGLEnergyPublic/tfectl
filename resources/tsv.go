@@ -1,51 +1,103 @@
+// This implementations is the Go equivalent of the _TsvOutput class offered by
+// the python knack package
 package resources
 
 import (
-	"bytes"
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
-
-	"github.com/jeremywohl/flatten"
 )
 
-func ToTsv(jsonStr []byte) ([]byte, error) {
-	var data []interface{}
-	var buf bytes.Buffer
+type TsvOutput struct{}
 
-	err := json.Unmarshal(jsonStr, &data)
-	if err != nil {
-		return nil, err
+func NewTsvOutput() *TsvOutput {
+	return &TsvOutput{}
+}
+
+func (*TsvOutput) dumpObj(data interface{}, stream *strings.Builder) error {
+	var toWrite string
+	switch v := data.(type) {
+	case []interface{}:
+		toWrite = strconv.Itoa(len(v))
+	case map[string]interface{}:
+		toWrite = ""
+	case bool:
+		toWrite = strconv.FormatBool(v)
+	case string:
+		stream.WriteString(v)
+	default:
+		toWrite = fmt.Sprint(data)
+	}
+	_, err := stream.WriteString(toWrite)
+	return err
+}
+
+func (t *TsvOutput) dumpRow(data interface{}, stream *strings.Builder) error {
+	separator := ""
+
+	var values []interface{}
+	var err error
+
+	switch v := data.(type) {
+	case map[string]interface{}:
+		keys := make([]string, 0, len(v))
+		for k := range v {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		values = make([]interface{}, len(keys))
+		for i, k := range keys {
+			values[i] = v[k]
+		}
+
+	case []interface{}:
+		values = v
+
+	case bool:
+		if err = t.dumpObj(v, stream); err != nil {
+			return err
+		}
+
+		_, err := stream.WriteString("\n")
+		return err
+
+	default:
+		if err = t.dumpObj(data, stream); err != nil {
+			return err
+		}
+		stream.WriteString("\n")
+		return err
 	}
 
-	super := map[string]interface{}{
-		"data": data,
+	for _, value := range values {
+		if _, err = stream.WriteString(separator); err != nil {
+			return err
+		}
+		if err = t.dumpObj(value, stream); err != nil {
+			return err
+		}
+		separator = "\t"
+	}
+	_, err = stream.WriteString("\n")
+	return err
+}
+
+func (t *TsvOutput) Dump(data []byte) (string, error) {
+	var d []interface{}
+
+	if err := json.Unmarshal(data, &d); err != nil {
+		return "", fmt.Errorf("unable to unmarshal bytes to []interface{}: %w", err)
 	}
 
-	flattened, err := flatten.Flatten(super, "", flatten.DotStyle)
-	if err != nil {
-		return nil, err
+	var io strings.Builder
+	for _, item := range d {
+		if err := t.dumpRow(item, &io); err != nil {
+			return "", fmt.Errorf("failed to dump row: %w", err)
+		}
 	}
 
-	writer := csv.NewWriter(&buf)
-	writer.Comma = '\t'
-
-	keys := make([]string, 0, len(flattened))
-	for k := range flattened {
-		keys = append(keys, strings.ReplaceAll(k, "data.0", ""))
-	}
-
-	writer.Write(keys)
-
-	values := make([]string, len(keys))
-	for i, key := range keys {
-		values[i] = fmt.Sprintf("%v", flattened[fmt.Sprintf("data.0%s", key)])
-	}
-
-	writer.Write(values)
-
-	writer.Flush()
-	cleanBuf := removeEmptyLines(&buf)
-	return cleanBuf.Bytes(), nil
+	return io.String(), nil
 }

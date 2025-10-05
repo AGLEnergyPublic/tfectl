@@ -114,6 +114,7 @@ var policySetListCmd = &cobra.Command{
 				policySet.ProjectCount,
 				string(policiesSlice),
 				policySet.PolicyCount)
+
 			err = json.Unmarshal([]byte(entry), &tmpPolicySet)
 			check(err)
 

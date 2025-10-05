@@ -23,7 +23,6 @@ var rootCmd = &cobra.Command{
 func RunRootCmd(cmd *cobra.Command, args []string) error {
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true
-	cmd.SetOut(os.Stdout)
 
 	if err := setUpLogs(l); err != nil {
 		return err
@@ -91,7 +90,8 @@ func outputData(cmd *cobra.Command, data []byte) {
 		return
 	}
 
-	outputTsv, err := resources.ToTsv(data)
+	tsv := resources.NewTsvOutput()
+	outputTsv, err := tsv.Dump(data)
 	check(err)
 	cmd.Println(string(outputTsv))
 }
