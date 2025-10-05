@@ -17,6 +17,7 @@
 
   Available Commands:
     admin        Manage TFE admin operations
+    agent-pool   Query TFE/TFC Agent Pools
     completion   Generate the autocompletion script for the specified shell
     help         Help about any command
     plan         Query TFE Plans
@@ -58,6 +59,7 @@ Usage:
 
 Available Commands:
   admin        Manage TFE admin operations
+  agent-pool   Query TFE/TFC Agent Pools
   completion   Generate the autocompletion script for the specified shell
   help         Help about any command
   policy       Query TFE policies
@@ -874,6 +876,32 @@ Use "tfectl [command] --help" for more information about a command.
             }
         ]
     }
+  ```
+</details>
+
+### Agent Pools
+<details>
+    <summary>Agent Pool Management</summary>
+
+* Query Agent Pools in TFE/TFC
+
+* #### List
+  ```bash
+    $ tfectl agent-pool list
+    [
+        {
+            "id": "apool-QC1XEM3uAmH73U1x",
+            "name": "UAT-Agent-Pool",
+            "agent_count": 2,
+            "organization_scoped": true,
+            "organization": "MyOrg",
+            "workspaces": [
+            "ws-tgH04B7DgViqyORO",
+            "ws-ycoUaJpIWlziMcql"
+            ],
+            "allowed_workspaces": null
+        }
+    ]
   ```
 </details>
     
