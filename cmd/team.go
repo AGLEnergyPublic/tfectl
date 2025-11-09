@@ -44,8 +44,6 @@ var teamListCmd = &cobra.Command{
 		organization, client, err := resources.Setup(cmd)
 		check(err)
 
-		query, _ := cmd.Flags().GetString("query")
-
 		// List teams.
 		teams, err := listTeams(client, organization, []string{})
 		check(err)
@@ -66,14 +64,7 @@ var teamListCmd = &cobra.Command{
 
 		teamJson, _ = json.MarshalIndent(teamList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(teamJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(teamJson))
-		}
-
+		outputData(cmd, teamJson)
 	},
 }
 
@@ -96,8 +87,6 @@ var teamGetCmd = &cobra.Command{
 		if names == "" && ids == "" {
 			log.Fatal("please provide one of ids or names to perform this operation!")
 		}
-
-		query, _ := cmd.Flags().GetString("query")
 
 		var teamJson []byte
 		var teamList []TeamDetail
@@ -131,14 +120,7 @@ var teamGetCmd = &cobra.Command{
 
 		teamJson, _ = json.MarshalIndent(teamList, "", "  ")
 
-		if query != "" {
-			outputJsonStr, err := resources.JqRun(teamJson, query)
-			check(err)
-			cmd.Println(string(outputJsonStr))
-		} else {
-			cmd.Println(string(teamJson))
-		}
-
+		outputData(cmd, teamJson)
 	},
 }
 
