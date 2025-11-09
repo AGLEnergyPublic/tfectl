@@ -1,5 +1,4 @@
-// This implementations is the Go equivalent of the _TsvOutput class offered by
-// the python knack package
+// Go equivalent of the _TsvOutput Class in the Python Knack package
 package resources
 
 import (
