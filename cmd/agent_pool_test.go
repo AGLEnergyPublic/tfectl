@@ -1,4 +1,3 @@
-//go: build all
 //go:build all
 // +build all
 
