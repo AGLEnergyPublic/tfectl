@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -34,15 +34,13 @@ type WorkspaceLite struct {
 }
 
 type WorkspaceVar struct {
-	WorkspaceID   string   `json:"workspace_id"`
-	WorkspaceName string   `json:"workspace_name"`
-	Variable      Variable `json:"variable"`
+	WorkspaceLite
+	Variable Variable `json:"variable"`
 }
 
 type WorkspaceVars struct {
-	WorkspaceID   string     `json:"workspace_id"`
-	WorkspaceName string     `json:"workspace_name"`
-	Variables     []Variable `json:"variables"`
+	WorkspaceLite
+	Variables []Variable `json:"variables"`
 }
 
 // variableCmd represents the variable command.
@@ -366,8 +364,7 @@ func listVariables(client *tfe.Client, workspace WorkspaceLite) (WorkspaceVars, 
 		}
 
 		result = WorkspaceVars{
-			WorkspaceID:   workspace.WorkspaceID,
-			WorkspaceName: workspace.WorkspaceName,
+			WorkspaceLite: workspace,
 			Variables:     tmpVarList,
 		}
 
@@ -468,7 +465,7 @@ func readJsonFile(file string) []byte {
 
 	defer jsonFile.Close()
 
-	byteJson, err := ioutil.ReadAll(jsonFile)
+	byteJson, err := io.ReadAll(jsonFile)
 	check(err)
 
 	return []byte(byteJson)

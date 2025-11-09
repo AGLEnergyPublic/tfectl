@@ -131,6 +131,19 @@ type Workspaces interface {
 	// DeleteDataRetentionPolicy deletes a workspace's data retention policy
 	// **Note: This functionality is only available in Terraform Enterprise.**
 	DeleteDataRetentionPolicy(ctx context.Context, workspaceID string) error
+
+	// ListTagBindings lists all tag bindings associated with the workspace.
+	ListTagBindings(ctx context.Context, workspaceID string) ([]*TagBinding, error)
+
+	// ListEffectiveTagBindings lists all tag bindings associated with the workspace which may be
+	// either inherited from a project or binded to the workspace itself.
+	ListEffectiveTagBindings(ctx context.Context, workspaceID string) ([]*EffectiveTagBinding, error)
+
+	// AddTagBindings adds or modifies the value of existing tag binding keys for a workspace.
+	AddTagBindings(ctx context.Context, workspaceID string, options WorkspaceAddTagBindingsOptions) ([]*TagBinding, error)
+
+	// DeleteAllTagBindings removes all tag bindings for a workspace.
+	DeleteAllTagBindings(ctx context.Context, workspaceID string) error
 }
 
 // workspaces implements Workspaces.
@@ -138,10 +151,26 @@ type workspaces struct {
 	client *Client
 }
 
+// WorkspaceSource represents a source type of a workspace.
+type WorkspaceSource string
+
+const (
+	WorkspaceSourceAPI       WorkspaceSource = "tfe-api"
+	WorkspaceSourceModule    WorkspaceSource = "tfe-module"
+	WorkspaceSourceUI        WorkspaceSource = "tfe-ui"
+	WorkspaceSourceTerraform WorkspaceSource = "terraform"
+)
+
 // WorkspaceList represents a list of workspaces.
 type WorkspaceList struct {
 	*Pagination
 	Items []*Workspace
+}
+
+// WorkspaceAddTagBindingsOptions represents the options for adding tag bindings
+// to a workspace.
+type WorkspaceAddTagBindingsOptions struct {
+	TagBindings []*TagBinding
 }
 
 // LockedByChoice is a choice type struct that represents the possible values
@@ -170,6 +199,7 @@ type Workspace struct {
 	ExecutionMode               string                          `jsonapi:"attr,execution-mode"`
 	FileTriggersEnabled         bool                            `jsonapi:"attr,file-triggers-enabled"`
 	GlobalRemoteState           bool                            `jsonapi:"attr,global-remote-state"`
+	InheritsProjectAutoDestroy  bool                            `jsonapi:"attr,inherits-project-auto-destroy"`
 	Locked                      bool                            `jsonapi:"attr,locked"`
 	MigrationEnvironment        string                          `jsonapi:"attr,migration-environment"`
 	Name                        string                          `jsonapi:"attr,name"`
@@ -178,6 +208,7 @@ type Workspace struct {
 	Permissions                 *WorkspacePermissions           `jsonapi:"attr,permissions"`
 	QueueAllRuns                bool                            `jsonapi:"attr,queue-all-runs"`
 	SpeculativeEnabled          bool                            `jsonapi:"attr,speculative-enabled"`
+	Source                      WorkspaceSource                 `jsonapi:"attr,source"`
 	SourceName                  string                          `jsonapi:"attr,source-name"`
 	SourceURL                   string                          `jsonapi:"attr,source-url"`
 	StructuredRunOutputEnabled  bool                            `jsonapi:"attr,structured-run-output-enabled"`
@@ -195,19 +226,23 @@ type Workspace struct {
 	RunsCount                   int                             `jsonapi:"attr,workspace-kpis-runs-count"`
 	TagNames                    []string                        `jsonapi:"attr,tag-names"`
 	SettingOverwrites           *WorkspaceSettingOverwrites     `jsonapi:"attr,setting-overwrites"`
+	HYOKEnabled                 *bool                           `jsonapi:"attr,hyok-enabled"`
 
 	// Relations
-	AgentPool                   *AgentPool            `jsonapi:"relation,agent-pool"`
-	CurrentRun                  *Run                  `jsonapi:"relation,current-run"`
-	CurrentStateVersion         *StateVersion         `jsonapi:"relation,current-state-version"`
-	Organization                *Organization         `jsonapi:"relation,organization"`
-	SSHKey                      *SSHKey               `jsonapi:"relation,ssh-key"`
-	Outputs                     []*WorkspaceOutputs   `jsonapi:"relation,outputs"`
-	Project                     *Project              `jsonapi:"relation,project"`
-	Tags                        []*Tag                `jsonapi:"relation,tags"`
-	CurrentConfigurationVersion *ConfigurationVersion `jsonapi:"relation,current-configuration-version,omitempty"`
-	LockedBy                    *LockedByChoice       `jsonapi:"polyrelation,locked-by"`
-	Variables                   []*Variable           `jsonapi:"relation,vars"`
+	AgentPool                   *AgentPool             `jsonapi:"relation,agent-pool"`
+	CurrentRun                  *Run                   `jsonapi:"relation,current-run"`
+	CurrentStateVersion         *StateVersion          `jsonapi:"relation,current-state-version"`
+	Organization                *Organization          `jsonapi:"relation,organization"`
+	SSHKey                      *SSHKey                `jsonapi:"relation,ssh-key"`
+	Outputs                     []*WorkspaceOutputs    `jsonapi:"relation,outputs"`
+	Project                     *Project               `jsonapi:"relation,project"`
+	Tags                        []*Tag                 `jsonapi:"relation,tags"`
+	CurrentConfigurationVersion *ConfigurationVersion  `jsonapi:"relation,current-configuration-version,omitempty"`
+	LockedBy                    *LockedByChoice        `jsonapi:"polyrelation,locked-by"`
+	Variables                   []*Variable            `jsonapi:"relation,vars"`
+	TagBindings                 []*TagBinding          `jsonapi:"relation,tag-bindings"`
+	EffectiveTagBindings        []*EffectiveTagBinding `jsonapi:"relation,effective-tag-bindings"`
+	HYOKEncryptedDataKey        *HYOKEncryptedDataKey  `jsonapi:"relation,hyok-data-key-for-encryption"`
 
 	// Deprecated: Use DataRetentionPolicyChoice instead.
 	DataRetentionPolicy *DataRetentionPolicy
@@ -251,6 +286,8 @@ type VCSRepo struct {
 	Tags              bool   `jsonapi:"attr,tags"`
 	TagsRegex         string `jsonapi:"attr,tags-regex"`
 	WebhookURL        string `jsonapi:"attr,webhook-url"`
+	SourceDirectory   string `jsonapi:"attr,source-directory"`
+	TagPrefix         string `jsonapi:"attr,tag-prefix"`
 }
 
 // Note: the fields of this struct are bool pointers instead of bool values, in order to simplify support for
@@ -271,6 +308,7 @@ type WorkspacePermissions struct {
 	CanForceUnlock    bool  `jsonapi:"attr,can-force-unlock"`
 	CanLock           bool  `jsonapi:"attr,can-lock"`
 	CanManageRunTasks bool  `jsonapi:"attr,can-manage-run-tasks"`
+	CanManageHYOK     bool  `jsonapi:"attr,can-manage-hyok"`
 	CanQueueApply     bool  `jsonapi:"attr,can-queue-apply"`
 	CanQueueDestroy   bool  `jsonapi:"attr,can-queue-destroy"`
 	CanQueueRun       bool  `jsonapi:"attr,can-queue-run"`
@@ -293,6 +331,7 @@ const (
 	WSCurrentRunPlan             WSIncludeOpt = "current_run.plan"
 	WSCurrentRunConfigVer        WSIncludeOpt = "current_run.configuration_version"
 	WSCurrentrunConfigVerIngress WSIncludeOpt = "current_run.configuration_version.ingress_attributes"
+	WSEffectiveTagBindings       WSIncludeOpt = "effective_tag_bindings"
 	WSLockedBy                   WSIncludeOpt = "locked_by"
 	WSReadme                     WSIncludeOpt = "readme"
 	WSOutputs                    WSIncludeOpt = "outputs"
@@ -328,6 +367,10 @@ type WorkspaceListOptions struct {
 
 	// Optional: A filter string to list all the workspaces filtered by current run status.
 	CurrentRunStatus string `url:"filter[current-run][status],omitempty"`
+
+	// Optional: A filter string to list workspaces filtered by key/value tags.
+	// These are not annotated and therefore not encoded by go-querystring
+	TagBindings []*TagBinding
 
 	// Optional: A list of relations to include. See available resources https://developer.hashicorp.com/terraform/cloud-docs/api-docs/workspaces#available-related-resources
 	Include []WSIncludeOpt `url:"include,omitempty"`
@@ -371,6 +414,9 @@ type WorkspaceCreateOptions struct {
 	// Optional: The period of time to wait after workspace activity to trigger a destroy run. The format
 	// should roughly match a Go duration string limited to days and hours, e.g. "24h" or "1d".
 	AutoDestroyActivityDuration jsonapi.NullableAttr[string] `jsonapi:"attr,auto-destroy-activity-duration,omitempty"`
+
+	// Optional: Whether the workspace inherits auto destroy settings from the project
+	InheritsProjectAutoDestroy *bool `jsonapi:"attr,inherits-project-auto-destroy,omitempty"`
 
 	// Optional: A description for the workspace.
 	Description *string `jsonapi:"attr,description,omitempty"`
@@ -451,6 +497,13 @@ type WorkspaceCreateOptions struct {
 	// environment when multiple environments exist within the same repository.
 	WorkingDirectory *string `jsonapi:"attr,working-directory,omitempty"`
 
+	// Optional: Enables HYOK in the workspace.
+	// If set to true, the workspace will be created with HYOK enabled.
+	// If set to false, the workspace will be created with HYOK disabled.
+	// If not specified, the workspace will be created with HYOK disabled.
+	// Note: HYOK is only available in HCP Terraform.
+	HYOKEnabled *bool `jsonapi:"attr,hyok-enabled,omitempty"`
+
 	// A list of tags to attach to the workspace. If the tag does not already
 	// exist, it is created and added to the workspace.
 	Tags []*Tag `jsonapi:"relation,tags,omitempty"`
@@ -471,6 +524,9 @@ type WorkspaceCreateOptions struct {
 	// Associated Project with the workspace. If not provided, default project
 	// of the organization will be assigned to the workspace.
 	Project *Project `jsonapi:"relation,project,omitempty"`
+
+	// Associated TagBindings of the workspace.
+	TagBindings []*TagBinding `jsonapi:"relation,tag-bindings,omitempty"`
 }
 
 // TODO: move this struct out. VCSRepoOptions is used by workspaces, policy sets, and registry modules
@@ -525,6 +581,9 @@ type WorkspaceUpdateOptions struct {
 	// Optional: The period of time to wait after workspace activity to trigger a destroy run. The format
 	// should roughly match a Go duration string limited to days and hours, e.g. "24h" or "1d".
 	AutoDestroyActivityDuration jsonapi.NullableAttr[string] `jsonapi:"attr,auto-destroy-activity-duration,omitempty"`
+
+	// Optional: Whether the workspace inherits auto destroy settings from the project
+	InheritsProjectAutoDestroy *bool `jsonapi:"attr,inherits-project-auto-destroy,omitempty"`
 
 	// Optional: A new name for the workspace, which can only include letters, numbers, -,
 	// and _. This will be used as an identifier and must be unique in the
@@ -607,9 +666,18 @@ type WorkspaceUpdateOptions struct {
 	// setting at the same time.
 	SettingOverwrites *WorkspaceSettingOverwritesOptions `jsonapi:"attr,setting-overwrites,omitempty"`
 
+	// Optional: Enables HYOK in the workspace.
+	// If set to true, the workspace will be updated with HYOK enabled.
+	// This can't be set to false, as HYOK is a one-way operation.
+	HYOKEnabled *bool `jsonapi:"attr,hyok-enabled,omitempty"`
+
 	// Associated Project with the workspace. If not provided, default project
 	// of the organization will be assigned to the workspace
 	Project *Project `jsonapi:"relation,project,omitempty"`
+
+	// Associated TagBindings of the project. Note that this will replace
+	// all existing tag bindings.
+	TagBindings []*TagBinding `jsonapi:"relation,tag-bindings,omitempty"`
 }
 
 // WorkspaceLockOptions represents the options for locking a workspace.
@@ -700,8 +768,14 @@ func (s *workspaces) List(ctx context.Context, organization string, options *Wor
 		return nil, err
 	}
 
+	var tagFilters map[string][]string
+	if options != nil {
+		tagFilters = encodeTagFiltersAsParams(options.TagBindings)
+	}
+
+	// Encode parameters that cannot be encoded by go-querystring
 	u := fmt.Sprintf("organizations/%s/workspaces", url.PathEscape(organization))
-	req, err := s.client.NewRequest("GET", u, options)
+	req, err := s.client.NewRequestWithAdditionalQueryParams("GET", u, options, tagFilters)
 	if err != nil {
 		return nil, err
 	}
@@ -713,6 +787,105 @@ func (s *workspaces) List(ctx context.Context, organization string, options *Wor
 	}
 
 	return wl, nil
+}
+
+func (s *workspaces) ListTagBindings(ctx context.Context, workspaceID string) ([]*TagBinding, error) {
+	if !validStringID(&workspaceID) {
+		return nil, ErrInvalidWorkspaceID
+	}
+
+	u := fmt.Sprintf("workspaces/%s/tag-bindings", url.PathEscape(workspaceID))
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var list struct {
+		*Pagination
+		Items []*TagBinding
+	}
+
+	err = req.Do(ctx, &list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list.Items, nil
+}
+
+func (s *workspaces) ListEffectiveTagBindings(ctx context.Context, workspaceID string) ([]*EffectiveTagBinding, error) {
+	if !validStringID(&workspaceID) {
+		return nil, ErrInvalidWorkspaceID
+	}
+
+	u := fmt.Sprintf("workspaces/%s/effective-tag-bindings", url.PathEscape(workspaceID))
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var list struct {
+		*Pagination
+		Items []*EffectiveTagBinding
+	}
+
+	err = req.Do(ctx, &list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list.Items, nil
+}
+
+// AddTagBindings adds or modifies the value of existing tag binding keys for a workspace.
+func (s *workspaces) AddTagBindings(ctx context.Context, workspaceID string, options WorkspaceAddTagBindingsOptions) ([]*TagBinding, error) {
+	if !validStringID(&workspaceID) {
+		return nil, ErrInvalidWorkspaceID
+	}
+
+	if err := options.valid(); err != nil {
+		return nil, err
+	}
+
+	u := fmt.Sprintf("workspaces/%s/tag-bindings", url.PathEscape(workspaceID))
+	req, err := s.client.NewRequest("PATCH", u, options.TagBindings)
+	if err != nil {
+		return nil, err
+	}
+
+	var response = struct {
+		*Pagination
+		Items []*TagBinding
+	}{}
+	err = req.Do(ctx, &response)
+
+	return response.Items, err
+}
+
+// DeleteAllTagBindings removes all tag bindings associated with a workspace.
+// This method will not remove any inherited tag bindings, which must be
+// explicitly removed from the parent project.
+func (s *workspaces) DeleteAllTagBindings(ctx context.Context, workspaceID string) error {
+	if !validStringID(&workspaceID) {
+		return ErrInvalidWorkspaceID
+	}
+
+	type aliasOpts struct {
+		Type        string        `jsonapi:"primary,workspaces"`
+		TagBindings []*TagBinding `jsonapi:"relation,tag-bindings"`
+	}
+
+	opts := &aliasOpts{
+		TagBindings: []*TagBinding{},
+	}
+
+	u := fmt.Sprintf("workspaces/%s", url.PathEscape(workspaceID))
+	req, err := s.client.NewRequest("PATCH", u, opts)
+	if err != nil {
+		return err
+	}
+
+	return req.Do(ctx, nil)
 }
 
 // Create is used to create a new workspace.
@@ -1054,6 +1227,9 @@ func (s *workspaces) Unlock(ctx context.Context, workspaceID string) (*Workspace
 	w := &Workspace{}
 	err = req.Do(ctx, w)
 	if err != nil {
+		if strings.Contains(err.Error(), "latest state version is still pending") {
+			return nil, ErrWorkspaceLockedStateVersionStillPending
+		}
 		return nil, err
 	}
 
@@ -1417,6 +1593,14 @@ func (s *workspaces) DeleteDataRetentionPolicy(ctx context.Context, workspaceID 
 	return req.Do(ctx, nil)
 }
 
+func (o WorkspaceAddTagBindingsOptions) valid() error {
+	if len(o.TagBindings) == 0 {
+		return ErrRequiredTagBindings
+	}
+
+	return nil
+}
+
 func (o WorkspaceCreateOptions) valid() error {
 	if !validString(o.Name) {
 		return ErrRequiredName
@@ -1433,7 +1617,7 @@ func (o WorkspaceCreateOptions) valid() error {
 	if o.AgentPoolID == nil && (o.ExecutionMode != nil && *o.ExecutionMode == "agent") {
 		return ErrRequiredAgentPoolID
 	}
-	if o.TriggerPrefixes != nil && len(o.TriggerPrefixes) > 0 &&
+	if len(o.TriggerPrefixes) > 0 &&
 		o.TriggerPatterns != nil && len(o.TriggerPatterns) > 0 {
 		return ErrUnsupportedBothTriggerPatternsAndPrefixes
 	}
@@ -1463,7 +1647,7 @@ func (o WorkspaceUpdateOptions) valid() error {
 	if o.AgentPoolID == nil && (o.ExecutionMode != nil && *o.ExecutionMode == "agent") {
 		return ErrRequiredAgentPoolID
 	}
-	if o.TriggerPrefixes != nil && len(o.TriggerPrefixes) > 0 &&
+	if len(o.TriggerPrefixes) > 0 &&
 		o.TriggerPatterns != nil && len(o.TriggerPatterns) > 0 {
 		return ErrUnsupportedBothTriggerPatternsAndPrefixes
 	}
